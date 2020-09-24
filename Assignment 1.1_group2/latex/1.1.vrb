@@ -1,0 +1,28 @@
+\frametitle{Optimization (cont)}
+	Sum
+		\begin{lstlisting}[language=R]
+wiggle_gauss_vec <- function(x, r) {
+wiggle = 0
+c1 = -1/(4*r^2)
+c2 = 1/(sqrt(2)*r)
+for(i in seq_along(x)){
+	z <- (x[i] - x)/c2
+	wiggle <- wiggle + sum(exp(c1 * z^2) * ((c2*z)^4 - 6 * (c2*z)^2 + 3))
+}
+wiggle <- wiggle / (8 * n^2 * r^5 * sqrt(pi))
+wiggle
+}
+	\end{lstlisting}
+	Outer
+		\begin{lstlisting}[language=R]
+wiggle_gauss_outer <- function(x, r) {
+c1 = -1/(4*r^2)
+c2 = 1/(sqrt(2)*r)
+wiggle <- outer(x, x, function(ww, w){
+	z <- (ww - w)/c2
+	exp(c1 * z^2) * ((c2*z)^4 - 6 * (c2*z)^2 + 3)
+})
+sum(wiggle) / (8 * n^2 * r^5 * sqrt(pi))
+}
+		\end{lstlisting}
+
