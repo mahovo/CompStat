@@ -83,6 +83,8 @@ curve(-2 * log(x-lambda) + log(lambda), lambda, lambda + 30,
 
 ## St Version 1 ====
 
+set.seed(12345)
+
 tmax = 100 ## ANUmber of paths
 n = 1e5 ## Number of steps in each path
 x = function(){runif(tmax, -1.9, 2)} # Generate vector of simulated data for single sim path

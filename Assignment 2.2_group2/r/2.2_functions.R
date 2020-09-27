@@ -1,3 +1,19 @@
+
+## # Generate vector of simulated data for single sim path
+#x <- 
+
+## Sn
+# Sn <- 
+
+
+## g
+#g <- 
+
+
+## phi
+# phi <- 
+
+
 MCI_ruin <- function(n, m, a, b) {
   # n is number of days the company earns/loses money
   # m is the number withdrawings
@@ -19,3 +35,4 @@ MCI_ruin <- function(n, m, a, b) {
   probabilityOfDefault <- numberOfDefaults / m
   probabilityOfDefault
 }
+
