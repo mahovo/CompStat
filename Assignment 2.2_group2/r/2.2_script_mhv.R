@@ -81,9 +81,9 @@ curve(-2 * log(x-lambda) + log(lambda), lambda, lambda + 30,
       add = TRUE, col = "blue")
 
 
-<<<<<<< HEAD
+
 ## Sn Version 1 ====
-set.seed(123)
+set.seed(12345)
 {
   m = 1000 ## Number of paths
   n = 100 ## Number of steps in each path
@@ -94,22 +94,7 @@ set.seed(123)
   mc_prob_1(mc_1$sim_mat)
 }
 #mc_prob_2(mc_1$sim_mat) # Don't use
-=======
-## St Version 1 ====
 
-set.seed(12345)
-
-tmax = 100 ## ANUmber of paths
-n = 1e5 ## Number of steps in each path
-x = function(){runif(tmax, -1.9, 2)} # Generate vector of simulated data for single sim path
-St = function(x){30 + cumsum(x())}
-mc_1 = mc_St_1(St, x, n)
-mc_1$mu_hat
-mc_prob_1(mc_1$sim_mat)
-mc_prob_2(mc_1$sim_mat) # Don't use
-
-## Plot St Version 1 simulations
->>>>>>> 352bb07555a5cd752bef215778d660cebc33b241
 
 ## Plot Sn Version 1 simulations
 {
@@ -135,14 +120,14 @@ plot_Sn_1_1000sim
 }
 
 ## Sn Version 2 ====
-
+set.seed(12345)
 m = 1000 ## Number of paths
 n = 100 ## Number of steps in path
 sim_Xn = function(n, m){runif(n*m, -1.9, 2)} # Vector of rand vals
 sim_mat = matrix(sim_Xn(n, m), n, m) # As matrix
-Sn = function(x){30+cumsum(x)}
+Sn = function(x){30 + cumsum(x)}
 
-mc_2 = mc_Sn_2(Sn, sim_mat, n)
+mc_2 = mc_Sn_2(Sn, sim_mat)
 mc_2$mu_hat
 mc_prob_1(mc_2$sim_mat)
 
@@ -230,7 +215,7 @@ plot_mc_est_1
   n = 100
   m = 1000
   x = matrix(runif(n*m, -1.9, 2), n, m)
-  mc_est_3 = mc_integral_2(h(x))
+  mc_est_3 = mc_integral_2(h_2(x))
   muhat_3 = mc_est_3$mu_hat; muhat_3
   sigmahat_3 = mc_est_3$sigma_hat; sigmahat_3
   nn = seq_along(mc_est_3$mu_hat_vect)
