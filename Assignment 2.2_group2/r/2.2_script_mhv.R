@@ -329,10 +329,6 @@ plot_bench_runif
 ## 2) Runtime wrt. n
 
 
-
-
-
-
 n_bench = microbenchmark(
   {
     m = 100
@@ -347,7 +343,7 @@ n_bench = microbenchmark(
     sim_Xn = function(n, m){runif(n*m, -1.9, 2)} # Vector of rand vals
     spl_paths = matrix(sim_Xn(n, m), n, m) # As matrix
     h = function(x){30+cumsum(x)}
-    mc_2 = mc_Sn_2(h, spl_paths, n)
+    mc_2 = mc_Sn_2(h, spl_paths)
   },
   {
     m = 100
@@ -375,7 +371,8 @@ levels(n_bench$expr) = c("v1", "v2", "v3", "v4", "v5")
 {
   n_bench_df = data.frame(
     num_iter = 10^(1:5),
-    runtime = summary(n_bench)$median
+    ## *** FIX ***
+    runtime = summary(n_bench)$median ## Nej! Plotter median for de 5 funktioner!!
   )
 }
 {
