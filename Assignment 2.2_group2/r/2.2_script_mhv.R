@@ -81,6 +81,7 @@ curve(-2 * log(x-lambda) + log(lambda), lambda, lambda + 30,
       add = TRUE, col = "blue")
 
 
+<<<<<<< HEAD
 ## Sn Version 1 ====
 set.seed(123)
 {
@@ -93,6 +94,22 @@ set.seed(123)
   mc_prob_1(mc_1$sim_mat)
 }
 #mc_prob_2(mc_1$sim_mat) # Don't use
+=======
+## St Version 1 ====
+
+set.seed(12345)
+
+tmax = 100 ## ANUmber of paths
+n = 1e5 ## Number of steps in each path
+x = function(){runif(tmax, -1.9, 2)} # Generate vector of simulated data for single sim path
+St = function(x){30 + cumsum(x())}
+mc_1 = mc_St_1(St, x, n)
+mc_1$mu_hat
+mc_prob_1(mc_1$sim_mat)
+mc_prob_2(mc_1$sim_mat) # Don't use
+
+## Plot St Version 1 simulations
+>>>>>>> 352bb07555a5cd752bef215778d660cebc33b241
 
 ## Plot Sn Version 1 simulations
 {
