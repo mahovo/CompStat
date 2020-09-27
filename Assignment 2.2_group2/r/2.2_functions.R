@@ -6,16 +6,17 @@
 ## Each sample path has length n.
 ## Number of sample paths is m.
 ## rfunc is the random generating function, eg. runif, rnorm, etc.
-## Sn is our h function.
+## Sn is our h function. A different h function could be supplied.
 x_mat_1 = function(n, m, rfunc = runif(n*m, -1.9, 2.0)){
   matrix(rfunc, n, m)
 }
 
-## Define function which generates our simulated sample pathes
+## Define function which generates our simulated sample paths.
+## This function is specific to the assignment.
 ## x is a length n vector (also works for matrices with n elements).
 Sn = function(x){30 + cumsum(x)}
 
-## Generate matrix of simulated values of S_n, version 1: for()
+## Generate matrix of simulated values of Sn, version 1: for()
 ## x_mat is the matrix of simulated X-values.
 ## Sn is a function, specific to this assignment.
 Sn_mat_gen_1 <- function(n, m, x_mat, Sn) {
@@ -26,8 +27,7 @@ Sn_mat_gen_1 <- function(n, m, x_mat, Sn) {
   Sn_mat
 }
 
-
-## Generate matrix of simulated values of S_n, version 2: apply()
+## Generate matrix of simulated values of Sn, version 2: apply()
 ## x_mat is the matrix of simulated X-values.
 ## Sn is a function, specific to this assignment.
 Sn_mat_gen_2 <- function(x_mat, Sn) {

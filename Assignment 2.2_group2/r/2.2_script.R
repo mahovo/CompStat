@@ -26,7 +26,7 @@ n = 100 ## Number of steps in path
 ## ESTIMATION ====
 
 
-## p(100) ----
+## > p(100) ----
 
 mc_results <- MC_ruin(
   x_mat_1(n, m), 
@@ -39,23 +39,23 @@ cat(paste0(
 ))
 
 
-## Monte Carlo Integral ----
+## > Monte Carlo Integral ----
 
 
-## Importance Sampling ----
+## > Importance Sampling ----
 
 ## **************************************
 
 ## OOP ====  
-## CONSTRUCTORS ----
+## > CONSTRUCTORS ----
 
 
 
-## VALIDATORS ----
+## > VALIDATORS ----
 
 
 
-## HELPERS ----
+## > HELPERS ----
 
 
 
@@ -67,7 +67,9 @@ cat(paste0(
 ## *** ----
 ## BENCHMARKING ----
 
-## Tests ----
-## 1) Runif ----
+## > TESTS ----
+## >> Sn_mat_gen_1 vs Sn_mat_gen_2 ----
 
-## 2) Runtime wrt. n ----
+## >> Runif ----
+
+## >> Runtime wrt. n ----
