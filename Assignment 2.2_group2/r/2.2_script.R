@@ -26,7 +26,17 @@ n = 100 ## Number of steps in path
 ## ESTIMATION ====
 
 
-## Sn ----
+## p(100) ----
+
+mc_results <- MC_ruin(
+  x_mat_1(n, m), 
+  Sn_mat_gen_2(x_mat_1(n, m), Sn), 
+  default_prob_1
+)
+cat(paste0(
+  "mu_hat: ", mc_results$mu_hat,
+  "\nProbability of default in ", n, " steps: ", mc_results$prob
+))
 
 
 ## Monte Carlo Integral ----
