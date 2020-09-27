@@ -82,6 +82,7 @@ curve(-2 * log(x-lambda) + log(lambda), lambda, lambda + 30,
 
 
 
+
 ## Sn Version 1 ====
 set.seed(12345)
 {
@@ -94,6 +95,7 @@ set.seed(12345)
   mc_prob_1(mc_1$sim_mat)
 }
 #mc_prob_2(mc_1$sim_mat) # Don't use
+
 
 
 ## Plot Sn Version 1 simulations
@@ -331,19 +333,18 @@ plot_bench_runif
 
 n_bench = microbenchmark(
   {
-    m = 100
+    m = 1000
     n = 1e1
-    x = function(){runif(T, -1.9, 2)} # Generate vector of simulated data for single sim path
+    x = function(){runif(n, -1.9, 2)} # Generate vector of simulated data for single sim path
     h = function(x){30 + cumsum(x())}
     mc_1 = mc_Sn_1(h, x, n)
   },
   {
     m = 100
     n = 1e2
-    sim_Xn = function(n, m){runif(n*m, -1.9, 2)} # Vector of rand vals
-    spl_paths = matrix(sim_Xn(n, m), n, m) # As matrix
-    h = function(x){30+cumsum(x)}
-    mc_2 = mc_Sn_2(h, spl_paths)
+    x = function(){runif(n, -1.9, 2)} # Generate vector of simulated data for single sim path
+    h = function(x){30 + cumsum(x())}
+    mc_1 = mc_Sn_1(h, x, n)
   },
   {
     m = 100
@@ -353,26 +354,25 @@ n_bench = microbenchmark(
     mc_1 = mc_Sn_1(h, x, n)
   },
   {
-    T = 100
+    m = 100
     n = 1e4
-    x = function(){runif(T, -1.9, 2)} # Generate vector of simulated data for single sim path
+    x = function(){runif(n, -1.9, 2)} # Generate vector of simulated data for single sim path
     h = function(x){30 + cumsum(x())}
-    mc_1 = mc_Sn_1(h, x, m)
+    mc_1 = mc_Sn_1(h, x, n)
   },
   {
-    T = 100
+    m = 100
     n = 1e5
-    x = function(){runif(T, -1.9, 2)} # Generate vector of simulated data for single sim path
+    x = function(){runif(n, -1.9, 2)} # Generate vector of simulated data for single sim path
     h = function(x){30 + cumsum(x())}
-    mc_1 = mc_Sn_1(h, x, m)
+    mc_1 = mc_Sn_1(h, x, n)
   }
 )
 levels(n_bench$expr) = c("v1", "v2", "v3", "v4", "v5")
 {
   n_bench_df = data.frame(
     num_iter = 10^(1:5),
-    ## *** FIX ***
-    runtime = summary(n_bench)$median ## Nej! Plotter median for de 5 funktioner!!
+    runtime = summary(n_bench)$median
   )
 }
 {

@@ -1,4 +1,3 @@
-
 ## Assignment 2-2 ----
 ## Importance sampling: Univariate Simulation ----
 
@@ -18,7 +17,7 @@
 }
 
 ## Constants
-  
+
 m = 1000 ## Number of paths
 n = 100 ## Number of steps in path
 
@@ -34,9 +33,9 @@ n = 100 ## Number of steps in path
 
 
 ## Importance Sampling ----
-  
+
 ## **************************************
-  
+
 ## OOP ====  
 ## CONSTRUCTORS ----
 
