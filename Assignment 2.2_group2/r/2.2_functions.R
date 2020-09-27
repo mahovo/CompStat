@@ -54,13 +54,12 @@ default_prob_1 = function(Sn_mat){
 
 ## List MC results for simulation
 
-MC_ruin <- function(x_mat, Sn_mat_gen, default_prob) {
+MCI_results <- function(x_mat, Sn_mat_gen, default_prob, seed_switch = FALSE, seed = 1) {
+  if(seed_switch){set.seed(seed)} ## Set seed if seed_switch=TRUE
   Sn_mat <- Sn_mat_gen
   prob <- default_prob(Sn_mat)
   list("mu_hat" = mean(Sn_mat), "Sn_mat" = Sn_mat, "prob" = prob)
 }
-
-
 
 
 MCI_ruin <- function(n, m, a, b) {

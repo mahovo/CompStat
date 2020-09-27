@@ -28,7 +28,7 @@ n = 100 ## Number of steps in path
 
 ## > p(100) ----
 
-mc_results <- MC_ruin(
+mc_results <- MC_results(
   x_mat_1(n, m), 
   Sn_mat_gen_2(x_mat_1(n, m), Sn), 
   default_prob_1
