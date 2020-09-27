@@ -1,43 +1,73 @@
-# Monte Carlo St Version 1 ====
-# Takes inputs:
-# Sn (Sn function)
-# x (function that generates vector of random data for single simulation)
-# n (numeric, number of simulations)
-mc_St_1 = function(St, x, n){
-  if(!is.function(St)){stop("Sn is not a function.")}
+## Monte Carlo Sn Version 1 ====
+## Takes inputs:
+## Sn (Sn function)
+## x (function that generates vector of random data for single simulation)
+## m (numeric, number of simulations)
+mc_Sn_1 = function(Sn, x, m){
+  if(!is.function(Sn)){stop("Sn is not a function.")}
   if(!is.function(x)){stop("x is not a function.")}
-  if(!is.numeric(n)){stop("n is not a number.")}
-  sim_mat = replicate(n, St(x())) # Matrix of sim data, cols are sample paths
+  if(!is.numeric(m)){stop("m is not a number.")}
+  sim_mat = replicate(m, Sn(x)) ## Matrix of sim data, cols are sample paths
   list("mu_hat" = mean(sim_mat), "sim_mat" = sim_mat)
 }
 
 
-# Monte Carlo St Version 2 ====
-# Takes inputs:
-# sim_mat (matrix, columns are sample paths)
-# Sn (Sn function)
+## Monte Carlo Sn Version 2 ====
+## Takes inputs:
+## sim_mat (matrix, columns are sample paths)
+## Sn (Sn function)
 
-mc_St_2 = function(St, sim_mat){
-  n = ncol(sim_mat) # number of sample paths
-  for(i in 1:n){
-    sim_mat[ ,i] = St(sim_mat[ ,i])
+mc_Sn_2 = function(Sn, sim_mat){
+  m = ncol(sim_mat) ## number of sample paths
+  for(i in 1:m){
+    sim_mat[ ,i] = Sn(sim_mat[ ,i]) ## Replace each column in sim_mat
   }
   list("mu_hat" = mean(sim_mat), "sim_mat" = sim_mat)
 }
 
 
-# Monte Carlo Integral Version 1 ====
+## Monte Carlo Integral Version 1 ====
 
-# h (h function, the function to integrate, outputs a sample path vector)
-# x (vector of sampled values)
+## h (h function, the function to integrate, outputs a sample path vector)
+## n (number of simulations)
 
-# h() is specific to the task, outputs a vector x = x_1, x_2, ..., x_n
-h = function(x){
-  n = ncol(x)
-  St = function(x){30+cumsum(x)}
-  sim_mat = apply(x, 2, St)
+## h_1() is specific to the task, outputs a vector x = x_1, x_2, ..., x_n
+h_1 = function(n){
+  m = 100
+  ## To enable mc_integral to take generic h-function, h doesn't
+  ## take m as input; only n.
+  sim_Xn = function(n, m){runif(n*m, -1.9, 2)} ## Vector of rand vals
+  sim_mat = matrix(sim_Xn(n, m), n, m) ## As matrix
+  Sn = function(sim_Xn){30 + cumsum(sim_Xn)}
+  for(i in 1:m){
+    sim_mat[ ,i] = Sn(sim_mat[ ,i])
+  }
+  evals = NULL ## Vector of evaluated values
+  for(i in 1:m){
+    evals[i] = (min(sim_mat[ ,i]) <= 0)
+  }
+  evals
+}
+mc_integral_1 = function(x){
+  nn = seq_along(x)
+  muhat = cumsum(x) / nn;
+  sigmahat = sd(x)
+  list("mu_hat" = muhat, "sigma_hat" = sigmahat)
+}
+
+
+## Monte Carlo Integral Version 2 ====
+
+## h_2 (h_2 function, the function to integrate, outputs a sample path vector)
+## x (vector of sampled values)
+
+## h() is specific to the task, outputs a vector x = x_1, x_2, ..., x_n
+h_2 = function(x){
+  m = ncol(x)
+  Sn = function(x){30 + cumsum(x)}
+  sim_mat = apply(x, 2, Sn) ## 2 indicates columns
   evals = NULL # Vector of evaluated values
-  for(i in 1:n){
+  for(i in 1:m){
     evals[i] = (min(sim_mat[ ,i]) <= 0)
   }
   evals
@@ -51,62 +81,32 @@ mc_integral_2 = function(x){
 
 
 
-# Monte Carlo Integral Version 2 ====
 
-# h (h function, the function to integrate, outputs a sample path vector)
-# n (number of simulations)
+## Probability ====
+## Idea: Count number of columns with at least one value =< 0
 
-# h() is specific to the task, outputs a vector x = x_1, x_2, ..., x_n
-h = function(n){
-  T_ = 100 # To enable mc_integral to take generic h-function, h doesn't
-  # take T_ as input; only n.
-  sim_Xn = function(T_, n){runif(T_*n, -1.9, 2)} # Vector of rand vals
-  sim_mat = matrix(sim_Xn(T_, n), nrow = T_, byrow = T_) # As matrix
-  St = function(sim_Xn){30+cumsum(sim_Xn)}
-  for(i in 1:n){
-    sim_mat[ ,i] = St(sim_mat[ ,i])
-  }
-  evals = NULL # Vector of evaluated values
-  for(i in 1:n){
-    evals[i] = (min(sim_mat[ ,i]) <= 0)
-  }
-  evals
-}
-mc_integral_1 = function(x){
-  nn = seq_along(x)
-  muhat = cumsum(x) / nn;
-  sigmahat = sd(x)
-  list("mu_hat" = muhat, "sigma_hat" = sigmahat)
-}
-
-
-
-
-# Probability ====
-# Idea: Count number of columns with at least one value =< 0
-
-# Ver 1: Ratio of simulations that fail to total num of sims
+## Ver 1: Ratio of simulations that fail to total num of sims
 mc_prob_1 = function(spl_paths){
-  n = ncol(spl_paths)
+  m = ncol(spl_paths)
   count = 0
-  for(i in 1:n){
+  for(i in 1:m){
     count = count + (min(spl_paths[ ,i]) <= 0)
   }
-  count/n
+  count/m
 }
 
-# Ver 2: Ratio of num of elem <= 0 to tot num elem
-mc_prob_2 = function(spl_paths){
-  num_elem = length(spl_paths)
-  count = sum(spl_paths <= 0)
-  count/num_elem
-}
+## Ver 2: Ratio of num of elem <= 0 to tot num elem
+# mc_prob_2 = function(spl_paths){
+#   num_elem = length(spl_paths)
+#   count = sum(spl_paths <= 0)
+#   count/num_elem
+# }
 
 
-# Helper functions (CSwR) ====
-# Gamma simulation ----
+## Helper functions (CSwR) ====
+## Gamma simulation ----
 
-# -> 4.3.1
+## -> 4.3.1
 
 rng_stream <- function(m, rng, ...) {
   args <- list(...)
@@ -126,7 +126,7 @@ rng_stream <- function(m, rng, ...) {
   next_rn
 }
 
-# -> 4.3.2
+## -> 4.3.2
 
 ## r >= 1 
 tfun <- function(y, a) {

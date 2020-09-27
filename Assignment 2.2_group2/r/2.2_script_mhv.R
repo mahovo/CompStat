@@ -44,7 +44,7 @@
 ## *** ----
 ## ESTIMATION ----
 
-## Test Monte Carlo average on gamma distributed data
+## Test Monte Carlo average on gamma distributed data. (Not part of assignment.)
 ## -> Simulated data (from CSwR 5.1.1) ----
 x <- gammasim(1000, 8) 
 nn <- seq_along(x)
@@ -81,73 +81,76 @@ curve(-2 * log(x-lambda) + log(lambda), lambda, lambda + 30,
       add = TRUE, col = "blue")
 
 
-## St Version 1 ====
-set.seed(12345)
-tmax = 100 ## ANUmber of paths
-n = 1e5 ## Number of steps in each path
-x = function(){runif(tmax, -1.9, 2)} # Generate vector of simulated data for single sim path
-St = function(x){30 + cumsum(x())}
-mc_1 = mc_St_1(St, x, n)
-mc_1$mu_hat
-mc_prob_1(mc_1$sim_mat)
-mc_prob_2(mc_1$sim_mat) # Don't use
+## Sn Version 1 ====
+set.seed(123)
+{
+  m = 1000 ## Number of paths
+  n = 100 ## Number of steps in each path
+  x = function(){runif(n, -1.9, 2)} # Generate vector of simulated data for single sim path
+  Sn = function(x){30 + cumsum(x())}
+  mc_1 = mc_Sn_1(Sn, x, m)
+  mc_1$mu_hat
+  mc_prob_1(mc_1$sim_mat)
+}
+#mc_prob_2(mc_1$sim_mat) # Don't use
 
-## Plot St Version 1 simulations
-
-tmax = 100
-n = 1e3
-x = function(){runif(n, -1.9, 2)} # Generate vector of simulated data for single sim path
-St = function(x){30 + cumsum(x())}
-mc_1 = mc_St_1(St, x(), n)
-mc_1$mu_hat
+## Plot Sn Version 1 simulations
+{
+  m = 1000
+  n = 100
+  x = function(){runif(n, -1.9, 2)} # Generate vector of simulated data for single sim path
+  Sn = function(x){30 + cumsum(x())}
+  mc_1 = mc_Sn_1(Sn, x, n)
+  mc_1$mu_hat
+}
 
 plot_data_1 = melt(mc_1$sim_mat) # From reshape2 library
-plot_St_1_1000sim = ggplot() +
+plot_Sn_1_1000sim = ggplot() +
   geom_line(data = plot_data_1, aes(x = Var1, y = value, group = Var2, colour=factor(Var2))) +
   geom_hline(yintercept = mc_1$mu_hat, color = "black") +
-  labs(title = "St", subtitle = substitute(paste(n, " simulations, T = ", tmax, ". Black line is mu_hat."), list(n = n)), x = "t", y = "St") +
+  labs(title = "Sn", subtitle = substitute(paste(m, " simulations, n = ", n, ". Black line is mu_hat."), list(n = n)), x = "k", y = "Sn") +
   theme(legend.position = "none")
-plot_St_1_1000sim
+plot_Sn_1_1000sim
 {
-  png('plot_St_1_1000sim.png', width=1800, height=1200, res=300)
-  plot_St_1_1000sim
+  png('plot_Sn_1_1000sim.png', width=1800, height=1200, res=300)
+  plot_Sn_1_1000sim
   dev.off()
 }
 
-## St Version 2 ====
+## Sn Version 2 ====
 
-tmax = 100
-n = 1e5
-sim_Xn = function(tmax, n){runif(T_*n, -1.9, 2)} # Vector of rand vals
-sim_mat = matrix(sim_Xn(tmax, n), nrow = tmax, byrow = T_) # As matrix
-St = function(x){30+cumsum(x)}
+m = 1000 ## Number of paths
+n = 100 ## Number of steps in path
+sim_Xn = function(n, m){runif(n*m, -1.9, 2)} # Vector of rand vals
+sim_mat = matrix(sim_Xn(n, m), n, m) # As matrix
+Sn = function(x){30+cumsum(x)}
 
 mc_2 = mc_Sn_2(Sn, sim_mat, n)
 mc_2$mu_hat
 mc_prob_1(mc_2$sim_mat)
 
-## St Version 2 simulations
+## Sn Version 2 simulations
 
-tmax = 100
-n = 1e3
-sim_Xn = function(tmax, n){runif(tmax*n, -1.9, 2)} # Vector of rand vals
-sim_mat = matrix(sim_Xn(tmax, n), nrow = tmax, byrow = T) # As matrix
-St = function(x){30+cumsum(x)}
+m = 1000 ## Number of paths
+n = 100 ## Number of steps in path
+sim_Xn = function(n, m){runif(n*m, -1.9, 2)} ## Vector of rand vals
+sim_mat = matrix(sim_Xn(n, m), n, m) ## As matrix
+Sn = function(x){30 + cumsum(x)}
 
-mc_2 = mc_St_2(St, sim_mat)
+mc_2 = mc_Sn_2(Sn, sim_mat)
 mc_2$mu_hat
 mc_prob_1(mc_2$sim_mat)
 
 plot_data_2 = melt(mc_2$sim_mat) # From reshape2 library
-plot_St_2_1000sim = ggplot() +
+plot_Sn_2_1000sim = ggplot() +
   geom_line(data = plot_data_2, aes(x = Var1, y = value, group = Var2, colour=factor(Var2))) +
   geom_hline(yintercept = mc_2$mu_hat, color = "black") +
-  labs(title = "St", subtitle = substitute(paste(n, " simulations, T = ", tmax, ". Black line is mu_hat."), list(n = n)), x = "t", y = "St") +
+  labs(title = "Sn", subtitle = substitute(paste(m, " simulations, n = ", n, ". Black line is mu_hat."), list(n = n)), x = "t", y = "Sn") +
   theme(legend.position = "none")
-plot_St_2_1000sim
+plot_Sn_2_1000sim
 {
-  png('plot_St_1_1000sim.png', width=1800, height=1200, res=300)
-  plot_St_2_1000sim
+  png('plot_Sn_1_1000sim.png', width=1800, height=1200, res=300)
+  plot_Sn_2_1000sim
   dev.off()
 }
 
@@ -155,9 +158,9 @@ plot_St_2_1000sim
 
 
 ## Monte Carlo Integral Version 1====
-tmax = 100
-n = 1e5
-mc_est_1 = mc_integral_1(h(n))
+m = 1000
+n = 100
+mc_est_1 = mc_integral_1(h_1(n))
 muhat = mc_est_1$mu_hat[length(mc_est_1$mu_hat)]; muhat
 sigmahat = mc_est_1$sigma_hat; sigmahat
 nn = seq_along(mc_est_1$mu_hat)
@@ -170,7 +173,7 @@ plot_mc_est_1 = qplot(seq_along(mc_est_1$mu_hat), mc_est_1$mu_hat) +
   #   fill = "green") +
   geom_line() + 
   geom_point() +
-  labs(title = "Monte Carlo estimate of p(n)", subtitle = paste("Max n = ", n), x = "n", y = "mu_hat")
+  labs(title = "Monte Carlo estimate of p(n)", subtitle = paste("n = ", n), x = "n", y = "mu_hat")
 plot_mc_est_1
 {
   png('plot_mc_est_1.png', width=1800, height=1200, res=300)
@@ -181,7 +184,7 @@ plot_mc_est_1
 ## Version 1, Plot 2
 ## Running average
 {
-  n = 1e5
+  n = 100
   cut = 1e4
   mc_est_2 = mc_integral_1(h(n))
   muhat = mc_est_2$mu_hat[length(mc_est_2$mu_hat)]; muhat
@@ -207,9 +210,9 @@ plot_mc_est_1
 
 ## Version 2, Plot 1
 {
-  n = 1e5
-  tmax = 100
-  x = matrix(runif(tmax*n, -1.9, 2), tmax, n)
+  n = 100
+  m = 1000
+  x = matrix(runif(n*m, -1.9, 2), n, m)
   mc_est_3 = mc_integral_2(h(x))
   muhat_3 = mc_est_3$mu_hat; muhat_3
   sigmahat_3 = mc_est_3$sigma_hat; sigmahat_3
@@ -301,11 +304,11 @@ sum(mc_1$sim_mat <= 0)
 
 ## Tests:
 ## 1) Runif
-tmax = 100
+m = 100
 n = 1e5
 bench_runif = microbenchmark(
-  matrix(runif(n*tmax, -1.9, 2), tmax, n),
-  replicate(n, runif(tmax, -1.9, 2))
+  matrix(runif(n*m, -1.9, 2), n, m),
+  replicate(n, runif(m, -1.9, 2))
 )
 levels(bench_runif$expr) = c("B", "A")
 plot_bench_runif = autoplot(bench_runif) +
@@ -330,24 +333,24 @@ plot_bench_runif
 
 n_bench = microbenchmark(
   {
-    T = 100
+    m = 100
     n = 1e1
     x = function(){runif(T, -1.9, 2)} # Generate vector of simulated data for single sim path
     h = function(x){30 + cumsum(x())}
     mc_1 = mc_Sn_1(h, x, n)
   },
   {
-    T = 100
+    m = 100
     n = 1e2
-    sim_Xn = function(T, n){runif(T*n, -1.9, 2)} # Vector of rand vals
-    spl_paths = matrix(sim_Xn(T, n), nrow = T, byrow = T) # As matrix
+    sim_Xn = function(n, m){runif(n*m, -1.9, 2)} # Vector of rand vals
+    spl_paths = matrix(sim_Xn(n, m), n, m) # As matrix
     h = function(x){30+cumsum(x)}
     mc_2 = mc_Sn_2(h, spl_paths, n)
   },
   {
-    T = 100
+    m = 100
     n = 1e3
-    x = function(){runif(T, -1.9, 2)} # Generate vector of simulated data for single sim path
+    x = function(){runif(n, -1.9, 2)} # Generate vector of simulated data for single sim path
     h = function(x){30 + cumsum(x())}
     mc_1 = mc_Sn_1(h, x, n)
   },
@@ -356,14 +359,14 @@ n_bench = microbenchmark(
     n = 1e4
     x = function(){runif(T, -1.9, 2)} # Generate vector of simulated data for single sim path
     h = function(x){30 + cumsum(x())}
-    mc_1 = mc_Sn_1(h, x, n)
+    mc_1 = mc_Sn_1(h, x, m)
   },
   {
     T = 100
     n = 1e5
     x = function(){runif(T, -1.9, 2)} # Generate vector of simulated data for single sim path
     h = function(x){30 + cumsum(x())}
-    mc_1 = mc_Sn_1(h, x, n)
+    mc_1 = mc_Sn_1(h, x, m)
   }
 )
 levels(n_bench$expr) = c("v1", "v2", "v3", "v4", "v5")
@@ -380,7 +383,7 @@ levels(n_bench$expr) = c("v1", "v2", "v3", "v4", "v5")
     scale_x_continuous(trans='log10') +
     scale_y_continuous(trans='log10') +
     labs(x = "Number of samples", y = "Median runtime (microseconds)") +
-    labs(title = 'St() benchmark', subtitle = 'Runtime of St() wrt. number of samples')
+    labs(title = 'Sn() benchmark', subtitle = 'Runtime of Sn() wrt. number of samples')
   plot_n_bench
 }
 {
