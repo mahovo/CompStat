@@ -19,7 +19,7 @@ Sn = function(x){30 + cumsum(x)}
 ## Generate matrix of simulated values of Sn, version 1: for()
 ## x_mat is the matrix of simulated X-values.
 ## Sn is a function, specific to this assignment.
-Sn_mat_gen_1 <- function(n, m, x_mat, Sn) {
+Sn_mat_gen_1 <- function(x_mat, Sn, n, m) {
   Sn_mat <- x_mat ## Place holder
   for(i in 1:m){
     Sn_mat[ ,i] = Sn(x_mat[ ,i]) ## For each column, apply Sn to the n x-values
@@ -37,6 +37,10 @@ Sn_mat_gen_2 <- function(x_mat, Sn) {
   Sn_mat
 }
 
+MC_integral <- function() {
+  
+}
+
 
 ## Calculate probability of default
 ## Idea: Count number of columns with at least one value =< 0
@@ -52,9 +56,10 @@ default_prob_1 = function(Sn_mat){
 }
 
 
-## List MC results for simulation
+## List MC results for simulation.
+## x_mat, Sn_mat_gen and default_prob are functions.
 
-MCI_results <- function(x_mat, Sn_mat_gen, default_prob, seed_switch = FALSE, seed = 1) {
+MCI_results <- function(Sn_mat_gen, default_prob, seed_switch = FALSE, seed = 1) {
   if(seed_switch){set.seed(seed)} ## Set seed if seed_switch=TRUE
   Sn_mat <- Sn_mat_gen
   prob <- default_prob(Sn_mat)
@@ -108,9 +113,22 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 
 ## Importance Sampling functions ====
 
-## g
-#g <- 
+## g for single sample path, version 1: power
+g_1 <- function(smp_path, theta, n) {
+  exp(theta * sum(smp_path)) / phi(theta)^n
+}
+
+## g for single sample path, version 2: for()
+g_2 <- function(smp_path, theta, n) {
+  g = 1
+  for(i in seq_along(smp_path)) {
+    g = g *theta * smp_path[i] / phi(theta)
+  }
+  g
+}
 
 
 ## phi
-# phi <- 
+phi <- function(theta) {
+  integrate(function(z){exp(theta*z)}, -1.9, 2)
+}

@@ -28,10 +28,23 @@ n = 100 ## Number of steps in path
 
 ## > p(100) ----
 
-mc_results <- MC_results(
-  x_mat_1(n, m), 
-  Sn_mat_gen_2(x_mat_1(n, m), Sn), 
-  default_prob_1
+mc_results <- MCI_results(
+  Sn_mat_gen_1(x_mat_1(n, m), Sn, n, m), 
+  default_prob_1,
+  seed_switch = TRUE,
+  seed = 123
+)
+cat(paste0(
+  "mu_hat: ", mc_results$mu_hat,
+  "\nProbability of default in ", n, " steps: ", mc_results$prob
+))
+
+
+mc_results <- MCI_results(
+  Sn_mat_gen_2(x_mat_1(n, m), Sn),
+  default_prob_1,
+  seed_switch = TRUE,
+  seed = 123
 )
 cat(paste0(
   "mu_hat: ", mc_results$mu_hat,
