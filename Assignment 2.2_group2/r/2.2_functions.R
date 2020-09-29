@@ -59,14 +59,19 @@ default_prob_1 = function(h_mat){
 }
 
 
-## List MC results for simulation.
-## x_mat, Sn_mat_gen and default_prob are functions.
+## MC integration.
+## Outputs:
+##      mu_hat, the value of the integral.
+##      h-matrix, which can be used as input for default_prob.
+## h is a function to integrate.
+## h_mat_gen is a function that generates a matrix of h(x) values.
+## rfunc is a function that generates random x-values from the distribution of x.
+## Seed can be switched on or off (TRUE/FALSE).
 
-MCI_results <- function(h, h_mat_gen, num_steps, num_paths, rfunc, default_prob, seed_switch = FALSE, seed = 1) {
+MCI <- function(h, h_mat_gen, num_steps, num_paths, rfunc, seed_switch = FALSE, seed = 1) {
   if(seed_switch){set.seed(seed)} ## Set seed if seed_switch=TRUE
   h_mat <- h_mat_gen(x_mat_1(num_steps, num_paths, rfunc), h)
-  prob <- default_prob(h_mat)
-  list("mu_hat" = mean(h_mat), "h_mat" = h_mat, "prob" = prob)
+  list("mu_hat" = mean(h_mat), "h_mat" = h_mat)
 }
 
 

@@ -39,19 +39,18 @@ cat(paste0(
   "\nProbability of default in ", num_steps, " steps: ", mc_results$prob
 ))
 
-mc_results <- MCI_results_1(
+mc_results <- MCI(
   Sn, ## h(x) function
   h_mat_gen_2, ## Generate matrix of h(x) values
   num_steps,
   num_paths,
   runif(num_steps*num_paths, -1.9, 2.0),
-  default_prob_1,
   seed_switch = TRUE,
   seed = 123
 )
 cat(paste0(
   "mu_hat: ", mc_results$mu_hat,
-  "\nProbability of default in ", num_steps, " steps: ", mc_results$prob
+  "\nProbability of default in ", num_steps, " steps: ", default_prob_1(mc_results$h_mat)
 ))
 
 
