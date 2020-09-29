@@ -44,7 +44,7 @@
 ## *** ----
 ## ESTIMATION ----
 
-## Test Monte Carlo average on gamma distributed data. (Not part of assignment.)
+## Test Monte Carlo integral on gamma distributed data. (Not part of assignment.)
 ## -> Simulated data (from CSwR 5.1.1) ----
 x <- gammasim(1000, 8) 
 nn <- seq_along(x)
