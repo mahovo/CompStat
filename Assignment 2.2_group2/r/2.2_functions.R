@@ -132,7 +132,7 @@ g_1 <- function(smp_path, theta, n) {
 g_2 <- function(smp_path, theta, n) {
   g = 1
   for(i in seq_along(smp_path)) {
-    g = g *theta * smp_path[i] / phi(theta)
+    g = g * exp(theta * smp_path[i]) / phi(theta)
   }
   g
 }
