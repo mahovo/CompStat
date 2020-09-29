@@ -123,6 +123,14 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 
 ## Importance Sampling functions ====
 
+## g function calls the phi function
+g <- function(x, theta = 0.4, phi_func = phi) {
+  n <- length(x)
+  res <- 1 / phi_func(theta, -1.9, 2)**n * exp(theta * cumsum(x))
+  
+  return(res)
+}
+
 ## g for single sample path, version 1: power
 g_1 <- function(smp_path, theta, n) {
   exp(theta * sum(smp_path)) / phi(theta)^n
