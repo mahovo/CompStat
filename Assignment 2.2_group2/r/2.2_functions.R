@@ -126,8 +126,7 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 ## g function calls the phi function
 g <- function(x, theta = 0.4, phi_func = phi) {
   n <- length(x)
-  res <- 1 / phi_func(theta, -1.9, 2)**n * exp(theta * cumsum(x))
-  
+  res <- 1 / phi_func(theta, -1.9, 2)**n * exp(theta * sum(x))
   return(res)
 }
 
