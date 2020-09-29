@@ -3,12 +3,12 @@
 
 ## Generate matrix of simulated X data, version 1
 ## Columns correspond to sample paths.
-## Each sample path has length n.
-## Number of sample paths is m.
+## num_steps is the length n of sample path.
+## num_paths is the number of sample paths.
 ## rfunc is the random generating function, eg. runif, rnorm, etc.
 ## Sn is our h function. A different h function could be supplied.
-x_mat_1 = function(n, m, rfunc = runif(n*m, -1.9, 2.0)){
-  matrix(rfunc, n, m)
+x_mat_1 = function(num_steps, num_paths, rfunc = runif(num_steps*num_paths, -1.9, 2.0)){
+  matrix(rfunc, num_steps, num_paths)
 }
 
 ## Define function which generates our simulated sample paths.
@@ -16,25 +16,28 @@ x_mat_1 = function(n, m, rfunc = runif(n*m, -1.9, 2.0)){
 ## x is a length n vector (also works for matrices with n elements).
 Sn = function(x){30 + cumsum(x)}
 
-## Generate matrix of simulated values of Sn, version 1: for()
+## Generate matrix of simulated values of h(x), version 1: for()
 ## x_mat is the matrix of simulated X-values.
-## Sn is a function, specific to this assignment.
-Sn_mat_gen_1 <- function(x_mat, Sn, n, m) {
-  Sn_mat <- x_mat ## Place holder
-  for(i in 1:m){
-    Sn_mat[ ,i] = Sn(x_mat[ ,i]) ## For each column, apply Sn to the n x-values
+## h is a function, h(x). Specifically in this assignment, h is Sn.
+## num_paths is the number of simulated paths.
+h_mat_gen_1 <- function(x_mat, h) {
+  h_mat <- x_mat ## Place holder
+  num_paths <- ncol(x_mat) ## Each column is a sample path
+  for(i in 1:num_paths){
+    h_mat[ ,i] = h(x_mat[ ,i]) ## For each column, apply h to the n x-values
   }
-  Sn_mat
+  h_mat
 }
 
-## Generate matrix of simulated values of Sn, version 2: apply()
+## Generate matrix of simulated values of h(x), version 2: apply()
 ## x_mat is the matrix of simulated X-values.
-## Sn is a function, specific to this assignment.
-Sn_mat_gen_2 <- function(x_mat, Sn) {
-  Sn_mat <- NULL
+## h is a function, h(x). Specifically in this assignment, h(x) is Sn.
+## num_paths is the number of simulated paths.
+h_mat_gen_2 <- function(x_mat, h) {
+  h_mat <- NULL
   ## For each column, apply Sn to the n x-values
-  Sn_mat <- apply(x_mat, 2, Sn) ## 2 for columns
-  Sn_mat
+  h_mat <- apply(x_mat, 2, h) ## 2 for columns
+  h_mat
 }
 
 MC_integral <- function() {
@@ -46,25 +49,27 @@ MC_integral <- function() {
 ## Idea: Count number of columns with at least one value =< 0
 
 ## Version 1: Ratio of simulations that fail to total num of sims
-default_prob_1 = function(Sn_mat){
-  m = ncol(Sn_mat)
+default_prob_1 = function(h_mat){
+  num_paths = ncol(h_mat)
   count = 0
-  for(i in 1:m){
-    count = count + (min(Sn_mat[ ,i]) <= 0)
+  for(i in 1:num_paths){
+    count = count + (min(h_mat[ ,i]) <= 0)
   }
-  count/m
+  count/num_paths
 }
 
 
 ## List MC results for simulation.
 ## x_mat, Sn_mat_gen and default_prob are functions.
 
-MCI_results <- function(Sn_mat_gen, default_prob, seed_switch = FALSE, seed = 1) {
+MCI_results <- function(h, h_mat_gen, num_steps, num_paths, rfunc, default_prob, seed_switch = FALSE, seed = 1) {
   if(seed_switch){set.seed(seed)} ## Set seed if seed_switch=TRUE
-  Sn_mat <- Sn_mat_gen
-  prob <- default_prob(Sn_mat)
-  list("mu_hat" = mean(Sn_mat), "Sn_mat" = Sn_mat, "prob" = prob)
+  h_mat <- h_mat_gen(x_mat_1(num_steps, num_paths, rfunc), h)
+  prob <- default_prob(h_mat)
+  list("mu_hat" = mean(h_mat), "h_mat" = h_mat, "prob" = prob)
 }
+
+
 
 
 MCI_ruin <- function(n, m, a, b) {
