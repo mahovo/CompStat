@@ -65,8 +65,7 @@ default_prob_1 = function(h_mat){
 ## rfunc is a function that generates random x-values from the distribution of x.
 ## Seed can be switched on or off (TRUE/FALSE).
 
-MCI <- function(h, h_mat_gen, num_steps, num_paths, rfunc, seed_switch = FALSE, seed = 1) {
-  if(seed_switch){set.seed(seed)} ## Set seed if seed_switch=TRUE
+MCI <- function(h, h_mat_gen, num_steps, num_paths, rfunc) {
   h_mat <- h_mat_gen(x_mat_1(num_steps, num_paths, rfunc), h)
   list("mu_hat" = mean(h_mat), "h_mat" = h_mat)
 }
@@ -122,21 +121,38 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 
 ## IS function
 
-IS <- function(h, h_mat_gen, num_steps, num_paths, rfunc, seed_switch = FALSE, seed = 1, sigma_switch = TRUE, ...) {
-  if(seed_switch){set.seed(seed)} ## Set seed if seed_switch=TRUE
-  f_mat <- x_mat_1(num_steps, num_paths, rfunc)
+# IS <- function(h, h_mat_gen, num_steps, num_paths, rfunc, sigma_switch = TRUE, ...) {
+#   x_tilde_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths, -1.9, 2))
+#   ## g_mat is g(x) matrix for num_paths paths
+#   f_mat <- x_mat_1(num_steps, num_paths, rfunc)
+#   g_mat <- apply(x_tilde_mat, 2, function(x_tilde_mat){g(x_tilde_mat, ...)}) ## 2 for columns
+#   h_mat <- h_mat_gen(g_mat, h)
+#   w_star <- f_mat/g_mat
+#   mu_hat <- mean(h_mat*w_star) ## Element wise matrix multiplication
+#   if(sigma_switch){
+#     sigma_hat <- 1
+#   } else {sigma_hat <- NA}
+#   list("mu_hat" = mu_hat, "h_mat" = h_mat, "sigma_hat" = sigma_hat)
+# }
+
+IS <- function(h, h_mat_gen, num_steps, num_paths, rfunc, sigma_switch = TRUE, ...) {
+  x_tilde_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths))
   ## g_mat is g(x) matrix for num_paths paths
-  #g_mat <- h_mat_gen_2(x_mat, function(x_mat){g(x_mat, theta, a, b)})
-  g_mat <- apply(f_mat, 2, function(f_mat){g(f_mat, ...)}) ## 2 for columns
+  #f_mat <- x_mat_1(num_steps, num_paths, rfunc)
+  g_mat <- apply(x_tilde_mat, 2, function(x_tilde_mat){g(x_tilde_mat, ...)}) ## 2 for columns
   h_mat <- h_mat_gen(g_mat, h)
-  w_star <- f_mat/g_mat
-  
+  #w_star <- f_mat/g_mat
+  w_star <- dunif(x_tilde_mat, -1.9, 2.0)/g_mat
   mu_hat <- mean(h_mat*w_star) ## Element wise matrix multiplication
   if(sigma_switch){
     sigma_hat <- 1
   } else {sigma_hat <- NA}
   list("mu_hat" = mu_hat, "h_mat" = h_mat, "sigma_hat" = sigma_hat)
 }
+
+
+
+
 
 
 ## g for x-vector, version 1: power

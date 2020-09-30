@@ -83,14 +83,13 @@ str(tmp_int)
 ## IS
 
 {
+#set.seed(123)
 is_results <- IS(
   h = Sn, ## h(x) function
   h_mat_gen = h_mat_gen_2, ## Generate matrix of h(x) values
   num_steps = 100, 
   num_paths = 1000, 
-  rfunc = runif(num_steps*num_paths), ## Standard uniform
-  seed_switch = TRUE, 
-  seed = 123, 
+  rfunc = runif(num_steps*num_paths, -1.9, 2.0),
   sigma_switch = FALSE,
   theta = 1,
   a = -1.9,
@@ -99,14 +98,13 @@ is_results <- IS(
 is_results$mu_hat
 }
 {
+set.seed(123)
 mc_results <- MCI(
   Sn, ## h(x) function
   h_mat_gen_2, ## Generate matrix of h(x) values
   num_steps,
   num_paths,
-  runif(num_steps*num_paths, -1.9, 2.0),
-  seed_switch = TRUE,
-  seed = 123
+  runif(num_steps*num_paths, -1.9, 2.0)
 )
 mc_results$mu_hat
 }
