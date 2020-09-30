@@ -144,9 +144,9 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 # }
 
 IS <- function(h, h_mat_gen, num_steps, num_paths, theta, a, b, sigma_switch = TRUE) {
-  x_tilde_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths, a, b))
+  x_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths, a, b))
   ## g_mat is g(x) matrix for num_paths paths
-  g_mat <- apply(x_tilde_mat, 2, function(x_tilde_mat){g(x_tilde_mat, theta, a, b)}) ## 2 for columns
+  g_mat <- apply(x_mat, 2, function(x_mat){g(x_mat, theta, a, b)}) ## 2 for columns
   ## p_vals is a matrix of random probabilities
   ## 0.02066011 < p < 1
   ## Lower values of p produce out of rance x values
@@ -155,7 +155,7 @@ IS <- function(h, h_mat_gen, num_steps, num_paths, theta, a, b, sigma_switch = T
   )
   xg_mat <- xg_gen(p_vals, theta, a, b) ## Quantile function for g density
   h_mat <- h_mat_gen(xg_mat, h)
-  w_star <- dunif(x_tilde_mat, a, b)/g_mat ## dunif(x, -1.9, 2.0) = 0.2564103 for all x
+  w_star <- dunif(x_mat, a, b)/g_mat ## dunif(x, -1.9, 2.0) = 0.2564103 for all x
   mu_hat <- mean(h_mat*w_star) ## Element wise matrix multiplication
   if(sigma_switch){
     sigma_hat <- 1
