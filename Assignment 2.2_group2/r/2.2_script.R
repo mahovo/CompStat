@@ -82,22 +82,37 @@ str(tmp_int)
 
 ## IS
 
+## Simulating x values with g:
+## Calculate min p value. Lower produces out of rance x values
+#-exp(-1.9)/(exp(a) - exp(b))
+## 0.02066011 < p < 1
+## Test that x values are in [-1.9, 2.0]
 {
-#set.seed(123)
+  p_vals <- matrix(
+    runif(num_steps * num_paths, 0.02066011, 1.0), num_steps, num_paths, byrow = FALSE
+  )
+  range(xg_gen(p_vals, theta=1, a=-1.9, b=2.0))
+}
+
+
+
+{
+set.seed(123)
 is_results <- IS(
   h = Sn, ## h(x) function
+  #h = default,
   h_mat_gen = h_mat_gen_2, ## Generate matrix of h(x) values
   num_steps = 100, 
-  num_paths = 1000, 
-  rfunc = runif(num_steps*num_paths, -1.9, 2.0),
-  sigma_switch = FALSE,
+  num_paths = 1000,
   theta = 1,
   a = -1.9,
-  b = 2.0
+  b = 2.0,
+  sigma_switch = FALSE
 )
 is_results$mu_hat
 }
 {
+## mu_hat is expected value of Sn
 set.seed(123)
 mc_results <- MCI(
   Sn, ## h(x) function
@@ -108,6 +123,20 @@ mc_results <- MCI(
 )
 mc_results$mu_hat
 }
+{
+  ## mu_hat = expected probability of default
+  #set.seed(123)
+  mc_results <- MCI(
+    default, ## h(x) function
+    h_mat_gen_2, ## Generate matrix of h(x) values
+    num_steps,
+    num_paths,
+    runif(num_steps*num_paths, -1.9, 2.0)
+  )
+  mc_results$mu_hat
+}
+
+
 
 
 ## **************************************

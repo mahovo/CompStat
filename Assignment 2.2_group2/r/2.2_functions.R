@@ -11,10 +11,18 @@ x_mat_1 = function(num_steps, num_paths, rfunc = runif(num_steps*num_paths, -1.9
   matrix(rfunc, num_steps, num_paths, byrow = FALSE)
 }
 
+## Calculate value of Sn for a single path
 ## Define function which generates our simulated sample paths.
 ## This function is specific to the assignment.
 ## x is a length n vector (also works for matrices with n elements).
 Sn = function(x){30 + cumsum(x)}
+
+## Calculate probability of default for a single path
+## h function for calculating probability of default
+## Returns 1 if default
+default = function(x){
+  min(30 + cumsum(x)) <= 0 
+}
 
 ## Generate matrix of simulated values of h(x), version 1: for()
 ## x_mat is the matrix of simulated X-values.
@@ -46,14 +54,14 @@ h_mat_gen_2 <- function(x_mat, h) {
 ## Idea: Count number of columns with at least one value =< 0
 
 ## Version 1: Ratio of simulations that fail to total num of sims
-default_prob_1 = function(h_mat){
-  num_paths = ncol(h_mat)
-  count = 0
-  for(i in 1:num_paths){
-    count = count + (min(h_mat[ ,i]) <= 0)
-  }
-  count/num_paths
-}
+# default_prob_1 = function(h_mat){
+#   num_paths = ncol(h_mat)
+#   count = 0
+#   for(i in 1:num_paths){
+#     count = count + (min(h_mat[ ,i]) <= 0)
+#   }
+#   count/num_paths
+# }
 
 
 ## MC integration.
@@ -135,24 +143,46 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 #   list("mu_hat" = mu_hat, "h_mat" = h_mat, "sigma_hat" = sigma_hat)
 # }
 
-IS <- function(h, h_mat_gen, num_steps, num_paths, rfunc, sigma_switch = TRUE, ...) {
-  x_tilde_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths))
+IS <- function(h, h_mat_gen, num_steps, num_paths, theta, a, b, sigma_switch = TRUE) {
+  x_tilde_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths, a, b))
   ## g_mat is g(x) matrix for num_paths paths
-  #f_mat <- x_mat_1(num_steps, num_paths, rfunc)
-  g_mat <- apply(x_tilde_mat, 2, function(x_tilde_mat){g(x_tilde_mat, ...)}) ## 2 for columns
-  h_mat <- h_mat_gen(g_mat, h)
-  #w_star <- f_mat/g_mat
-  w_star <- dunif(x_tilde_mat, -1.9, 2.0)/g_mat
+  g_mat <- apply(x_tilde_mat, 2, function(x_tilde_mat){g(x_tilde_mat, theta, a, b)}) ## 2 for columns
+  ## p_vals is a matrix of random probabilities
+  ## 0.02066011 < p < 1
+  ## Lower values of p produce out of rance x values
+  p_vals <- matrix(
+    runif(num_steps * num_paths, 0.02066011, 1.0), num_steps, num_paths, byrow = FALSE
+  )
+  xg_mat <- xg_gen(p_vals, theta, a, b) ## Quantile function for g density
+  h_mat <- h_mat_gen(xg_mat, h)
+  w_star <- dunif(x_tilde_mat, a, b)/g_mat ## dunif(x, -1.9, 2.0) = 0.2564103 for all x
   mu_hat <- mean(h_mat*w_star) ## Element wise matrix multiplication
   if(sigma_switch){
     sigma_hat <- 1
   } else {sigma_hat <- NA}
-  list("mu_hat" = mu_hat, "h_mat" = h_mat, "sigma_hat" = sigma_hat)
+  list("mu_hat" = mu_hat, "h_mat" = h_mat, "gx_mat" = xg_mat, "sigma_hat" = sigma_hat)
 }
 
 
+## phi
+phi <- function(theta, a, b) {
+  #integrate(function(z){exp(theta*z)}, a, b)
+  exp(b*theta) - exp(a*theta)
+}
 
 
+## g for single x_ik
+## Index i: Path
+## Index k: Step
+g <- function(x_ki, theta, a, b) {
+  exp(theta * x_ki) / phi(theta, a, b)
+}
+
+## Generate random x matrix from g distribution
+## p_vect is a vector of random probabilities (vals in [0,1])
+xg_gen <- function(p_vect, theta, a, b) {
+  log(-(exp(a*theta) - exp(b*theta)) * p_vect * theta)/theta ## Inverse distribution (quantile function)
+}
 
 
 ## g for x-vector, version 1: power
@@ -178,16 +208,4 @@ gn_3 <- function(x, theta = 0.4, phi_func = phi) {
   return(res)
 }
 
-## g for single x_ik
-## Index i: Path
-## Index k: Step
-g <- function(x_ki, theta, a, b) {
-  exp(theta * x_ki) / phi(theta, a, b)
-}
-str(g)
 
-## phi
-phi <- function(theta, a, b) {
-  #integrate(function(z){exp(theta*z)}, a, b)
-  exp(b*theta) - exp(a*theta)
-}
