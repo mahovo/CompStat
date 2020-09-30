@@ -24,7 +24,7 @@ num_steps = 100 ## Number of steps in path
 
 ## *** ----
 ## ESTIMATION ====
-
+## > Monte Carlo Integral ----
 
 ## > p(100) ----
 
@@ -55,11 +55,62 @@ cat(paste0(
 
 
 
-
-## > Monte Carlo Integral ----
-
-
 ## > Importance Sampling ----
+
+## Test that g is a density function
+x <- x_mat_1(100, 1, rfunc = runif(num_steps*num_paths, -1.9, 2.0))
+g_i(x, theta = 1, -1.9, 2)
+phi(1, -1.9, 2)
+tmp_int <- integrate(function(x){g_i(x, theta = 1, -1.9, 2)}, -1.9, 2.0)
+str(tmp_int)
+{
+  theta_vals <- seq(0.5, 1.5, 0.01)
+  a=-1.9
+  b=2
+  integrate(function(x){g_i(x, theta = 1, a, b)}, a, b)
+  theta_test <- sapply(
+    tmp_theta,
+    function(test) {integrate(function(x){g_i(x, theta = test, a, b)}, a, b)$value}
+  )
+  plot_optimal_theta_sim = qplot(theta_vals, theta_test, xlab="theta", ylab="integral of g") + 
+    geom_vline(xintercept = 1, color = "red", size = 0.5) +
+    geom_hline(yintercept = 1, color = "red", size = 0.5) +
+    #scale_x_continuous(trans = 'log10')+
+    labs(title = "Optimal theta", subtitle = "For density integrating to 1")
+  plot_optimal_theta_sim
+}
+
+## IS
+
+{
+is_results <- IS(
+  h = Sn, ## h(x) function
+  h_mat_gen = h_mat_gen_2, ## Generate matrix of h(x) values
+  num_steps = 100, 
+  num_paths = 1000, 
+  rfunc = runif(num_steps*num_paths), ## Standard uniform
+  seed_switch = TRUE, 
+  seed = 123, 
+  sigma_switch = FALSE,
+  theta = 1,
+  a = -1.9,
+  b = 2.0
+)
+is_results$mu_hat
+}
+{
+mc_results <- MCI(
+  Sn, ## h(x) function
+  h_mat_gen_2, ## Generate matrix of h(x) values
+  num_steps,
+  num_paths,
+  runif(num_steps*num_paths, -1.9, 2.0),
+  seed_switch = TRUE,
+  seed = 123
+)
+mc_results$mu_hat
+}
+
 
 ## **************************************
 

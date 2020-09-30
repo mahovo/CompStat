@@ -8,7 +8,7 @@
 ## rfunc is the random generating function, eg. runif, rnorm, etc.
 ## Sn is our h function. A different h function could be supplied.
 x_mat_1 = function(num_steps, num_paths, rfunc = runif(num_steps*num_paths, -1.9, 2.0)){
-  matrix(rfunc, num_steps, num_paths)
+  matrix(rfunc, num_steps, num_paths, byrow = FALSE)
 }
 
 ## Define function which generates our simulated sample paths.
@@ -40,9 +40,6 @@ h_mat_gen_2 <- function(x_mat, h) {
   h_mat
 }
 
-MC_integral <- function() {
-  
-}
 
 
 ## Calculate probability of default
@@ -123,22 +120,58 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 
 ## Importance Sampling functions ====
 
-## g for single sample path, version 1: power
-g_1 <- function(smp_path, theta, n) {
-  exp(theta * sum(smp_path)) / phi(theta)^n
+## IS function
+
+IS <- function(h, h_mat_gen, num_steps, num_paths, rfunc, seed_switch = FALSE, seed = 1, sigma_switch = TRUE, ...) {
+  if(seed_switch){set.seed(seed)} ## Set seed if seed_switch=TRUE
+  f_mat <- x_mat_1(num_steps, num_paths, rfunc)
+  ## g_mat is g(x) matrix for num_paths paths
+  #g_mat <- h_mat_gen_2(x_mat, function(x_mat){g(x_mat, theta, a, b)})
+  g_mat <- apply(f_mat, 2, function(f_mat){g(f_mat, ...)}) ## 2 for columns
+  h_mat <- h_mat_gen(g_mat, h)
+  w_star <- f_mat/g_mat
+  
+  mu_hat <- mean(h_mat*w_star) ## Element wise matrix multiplication
+  if(sigma_switch){
+    sigma_hat <- 1
+  } else {sigma_hat <- NA}
+  list("mu_hat" = mu_hat, "h_mat" = h_mat, "sigma_hat" = sigma_hat)
 }
 
-## g for single sample path, version 2: for()
-g_2 <- function(smp_path, theta, n) {
+
+## g for x-vector, version 1: power
+gn_1 <- function(smp_path, theta, a, b) {
+  n = length(smp_path)
+  exp(theta * sum(smp_path)) / phi(theta, a, b)^n
+}
+
+## g for x-vector, version 2: for()
+gn_2 <- function(smp_path, theta, a, b) {
   g = 1
   for(i in seq_along(smp_path)) {
-    g = g * exp(theta * smp_path[i]) / phi(theta)
+    g = g * exp(theta * smp_path[i]) / phi(theta, a, b)
   }
   g
 }
 
+## g function calls the phi function
+gn_3 <- function(x, theta = 0.4, phi_func = phi) {
+  n <- length(x)
+  res <- 1 / phi_func(theta, -1.9, 2)**n * exp(theta * sum(x))
+  
+  return(res)
+}
+
+## g for single x_ik
+## Index i: Path
+## Index k: Step
+g <- function(x_ki, theta, a, b) {
+  exp(theta * x_ki) / phi(theta, a, b)
+}
+str(g)
 
 ## phi
-phi <- function(theta) {
-  integrate(function(z){exp(theta*z)}, -1.9, 2)
+phi <- function(theta, a, b) {
+  #integrate(function(z){exp(theta*z)}, a, b)
+  exp(b*theta) - exp(a*theta)
 }
