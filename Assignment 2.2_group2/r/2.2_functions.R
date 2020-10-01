@@ -158,7 +158,7 @@ IS <- function(h, h_mat_gen, num_steps, num_paths, theta, a, b, sigma_switch = T
   w_star <- dunif(x_mat, a, b)/g_mat ## dunif(x, -1.9, 2.0) = 0.2564103 for all x
   mu_hat <- mean(h_mat*w_star) ## Element wise matrix multiplication
   if(sigma_switch){
-    sigma_hat <- 1
+    # *** missing ***
   } else {sigma_hat <- NA}
   list("mu_hat" = mu_hat, "h_mat" = h_mat, "gx_mat" = xg_mat, "sigma_hat" = sigma_hat)
 }

@@ -14,6 +14,9 @@
   library(profvis)
   library(Matrix)
   library(reshape2)
+  
+  # Source functions
+  source("/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/r/2.2_functions.R")
 }
 
 ## Constants
@@ -114,27 +117,43 @@ is_results$mu_hat
 {
 ## mu_hat is expected value of Sn
 set.seed(123)
-mc_results <- MCI(
+mc_results_1 <- MCI(
   Sn, ## h(x) function
   h_mat_gen_2, ## Generate matrix of h(x) values
   num_steps,
   num_paths,
   runif(num_steps*num_paths, -1.9, 2.0)
 )
-mc_results$mu_hat
+mc_results_1$mu_hat
 }
+
 {
   ## mu_hat = expected probability of default
-  #set.seed(123)
-  mc_results <- MCI(
+  set.seed(123)
+  mc_results_2 <- MCI(
     default, ## h(x) function
     h_mat_gen_2, ## Generate matrix of h(x) values
     num_steps,
     num_paths,
     runif(num_steps*num_paths, -1.9, 2.0)
   )
-  mc_results$mu_hat
+  mc_results_2$mu_hat
 }
+{
+  set.seed(123)
+  is_results <- IS(
+    h = default,
+    h_mat_gen = h_mat_gen_2, ## Generate matrix of h(x) values
+    num_steps = 100, 
+    num_paths = 1000,
+    theta = 1,
+    a = -1.9,
+    b = 2.0,
+    sigma_switch = FALSE
+  )
+  is_results$mu_hat
+}
+
 
 
 
@@ -158,6 +177,20 @@ mc_results$mu_hat
 ## *** ----
 ## PROFILING ----
 
+source("/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/r/2.2_functions.R")
+
+profvis(IS(
+  h = Sn, ## h(x) function
+  #h = default,
+  h_mat_gen = h_mat_gen_2, ## Generate matrix of h(x) values
+  num_steps = 100, 
+  num_paths = 1000,
+  theta = 1,
+  a = -1.9,
+  b = 2.0,
+  sigma_switch = FALSE
+))
+
 
 ## *** ----
 ## BENCHMARKING ----
@@ -168,3 +201,6 @@ mc_results$mu_hat
 ## >> Runif ----
 
 ## >> Runtime wrt. n ----
+
+
+
