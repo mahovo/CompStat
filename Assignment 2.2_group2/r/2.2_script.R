@@ -98,7 +98,7 @@ str(tmp_int)
 }
 
 
-
+## Compare IS and MC for Sn-function
 {
 set.seed(123)
 is_results <- IS(
@@ -127,6 +127,7 @@ mc_results_1 <- MCI(
 mc_results_1$mu_hat
 }
 
+## Compare IS and MC for default function
 {
   ## mu_hat = expected probability of default
   set.seed(123)

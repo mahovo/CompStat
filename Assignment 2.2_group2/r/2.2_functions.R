@@ -129,20 +129,6 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 
 ## IS function
 
-# IS <- function(h, h_mat_gen, num_steps, num_paths, rfunc, sigma_switch = TRUE, ...) {
-#   x_tilde_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths, -1.9, 2))
-#   ## g_mat is g(x) matrix for num_paths paths
-#   f_mat <- x_mat_1(num_steps, num_paths, rfunc)
-#   g_mat <- apply(x_tilde_mat, 2, function(x_tilde_mat){g(x_tilde_mat, ...)}) ## 2 for columns
-#   h_mat <- h_mat_gen(g_mat, h)
-#   w_star <- f_mat/g_mat
-#   mu_hat <- mean(h_mat*w_star) ## Element wise matrix multiplication
-#   if(sigma_switch){
-#     sigma_hat <- 1
-#   } else {sigma_hat <- NA}
-#   list("mu_hat" = mu_hat, "h_mat" = h_mat, "sigma_hat" = sigma_hat)
-# }
-
 IS <- function(h, h_mat_gen, num_steps, num_paths, theta, a, b, sigma_switch = TRUE) {
   x_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths, a, b))
   ## g_mat is g(x) matrix for num_paths paths
