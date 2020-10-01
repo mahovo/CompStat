@@ -127,6 +127,7 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 
 ## Importance Sampling functions ====
 
+
 ## IS function
 
 IS <- function(h, h_mat_gen, num_steps, num_paths, theta, a, b, sigma_switch = TRUE) {
@@ -175,7 +176,14 @@ xg_gen <- function(p_vect, theta, a, b) {
 gn_1 <- function(smp_path, theta, a, b) {
   n = length(smp_path)
   exp(theta * sum(smp_path)) / phi(theta, a, b)^n
-}
+
+## g function calls the phi function
+#g <- function(x, theta = 0.4, phi_func = phi) {
+#  n <- length(x)
+#  res <- 1 / phi_func(theta, -1.9, 2)**n * exp(theta * sum(x))
+#  return(res)
+#}
+
 
 ## g for x-vector, version 2: for()
 gn_2 <- function(smp_path, theta, a, b) {
