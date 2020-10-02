@@ -104,10 +104,10 @@ set.seed(123)
 is_results <- IS(
   h = Sn, ## h(x) function
   #h = default,
-  h_mat_gen = h_mat_gen_2, ## Generate matrix of h(x) values
+  h_vect_gen = h_vect_gen_2, ## Generate matrix of h(x) values
   num_steps = 100, 
   num_paths = 1000,
-  theta = 1,
+  theta = -0.2,
   a = -1.9,
   b = 2.0,
   sigma_switch = FALSE
@@ -116,10 +116,10 @@ is_results$mu_hat
 }
 {
 ## mu_hat is expected value of Sn
-set.seed(123)
+#set.seed(123)
 mc_results_1 <- MCI(
   Sn, ## h(x) function
-  h_mat_gen_2, ## Generate matrix of h(x) values
+  h_vect_gen_2, ## Generate vector of h(x) values
   num_steps,
   num_paths,
   runif(num_steps*num_paths, -1.9, 2.0)
@@ -129,30 +129,30 @@ mc_results_1$mu_hat
 
 ## Compare IS and MC for default function
 {
-  ## mu_hat = expected probability of default
-  set.seed(123)
-  mc_results_2 <- MCI(
-    default, ## h(x) function
-    h_mat_gen_2, ## Generate matrix of h(x) values
-    num_steps,
-    num_paths,
-    runif(num_steps*num_paths, -1.9, 2.0)
-  )
-  mc_results_2$mu_hat
-}
-{
-  set.seed(123)
+  #set.seed(123)
   is_results <- IS(
     h = default,
-    h_mat_gen = h_mat_gen_2, ## Generate matrix of h(x) values
-    num_steps = 100, 
-    num_paths = 1000,
-    theta = 1,
+    h_vect_gen = h_vect_gen_2, ## Generate vector of h(x) values
+    num_steps, 
+    num_paths = 1e5,
+    theta = -0.2,
     a = -1.9,
     b = 2.0,
     sigma_switch = FALSE
   )
-  is_results$mu_hat
+  is_results$mu_hat[n]
+}
+{
+  ## mu_hat = expected probability of default
+  set.seed(123)
+  mc_results_2 <- MCI(
+    default, ## h(x) function
+    h_vect_gen_2, ## Generate vector of h(x) values
+    num_steps = 100,
+    num_paths = 1000,
+    runif(num_steps*num_paths, -1.9, 2.0)
+  )
+  mc_results_2$mu_hat
 }
 
 
