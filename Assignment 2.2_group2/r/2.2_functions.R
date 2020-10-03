@@ -51,33 +51,31 @@ h_vect_gen_2 <- function(x_mat, h) {
   h_vect
 }
 
-
-## Calculate probability of default
-## Idea: Count number of columns with at least one value =< 0
-
-## Version 1: Ratio of simulations that fail to total num of sims
-# default_prob_1 = function(h_mat){
-#   num_paths = ncol(h_mat)
-#   count = 0
-#   for(i in 1:num_paths){
-#     count = count + (min(h_mat[ ,i]) <= 0)
-#   }
-#   count/num_paths
-# }
-
-
 ## MC integration.
 ## Outputs:
 ##      mu_hat, the value of the integral.
-##      h-matrix, which can be used as input for default_prob.
+##      h-vector, vector of values of h for each path.
 ## h is a function to integrate.
-## h_mat_gen is a function that generates a matrix of h(x) values.
+## h_vect_gen is a function that generates a vector of h(x) values.
 ## rfunc is a function that generates random x-values from the distribution of x.
 ## Seed can be switched on or off (TRUE/FALSE).
 
-MCI <- function(h, h_vect_gen, num_steps, num_paths, rfunc) {
+MCI <- function(h, h_vect_gen, num_steps, num_paths, rfunc, sigma_switch = TRUE) {
   h_vect <- h_vect_gen(x_mat_1(num_steps, num_paths, rfunc), h)
-  list("mu_hat" = mean(h_vect), "h_vect" = h_vect)
+  mu_hat <- cumsum(h_vect) / 1:num_paths
+  if(sigma_switch){
+    sigma_hat <- numeric(num_paths)
+    dev <- numeric(num_paths)
+    ci_l <- numeric(num_paths) ## c.i. lower
+    ci_u <- numeric(num_paths) ## c.i. upper
+    for(i in 1:num_paths){
+      sigma_hat[i] <- sd(h_vect[1:i]) ## sd for paths 1 thru i
+      dev[i] <- 1.96 * sigma_hat[i] / sqrt(i)
+    }
+    ci_l <- mu_hat - dev
+    ci_u <- mu_hat + dev
+  } else {sigma_hat <- NA; ci_l = NA; ci_u = NA}
+  list("mu_hat" = mu_hat, "h_vect" = h_vect, "sigma_hat" = sigma_hat, "CI_lower" = ci_l, "CI_upper" = ci_u)
 }
 
 
@@ -133,32 +131,32 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 ## IS function
 
 IS <- function(h, h_vect_gen, num_steps, num_paths, theta, a, b, sigma_switch = TRUE) {
-  #x_mat <- x_mat_1(num_steps, num_paths, runif(num_steps*num_paths, a, b))
-  ## g_mat is g(x) matrix for num_paths paths
-  #g_mat <- apply(x_mat, 2, function(x_mat){g(x_mat, theta, a, b)}) ## 2 for columns
   ## p_vals is a matrix of random probabilities
-  ## 0.02066011 < p < 1
-  ## Lower values of p produce out of range x values
   p_vals <- matrix(
-    runif(num_steps * num_paths, 0.02066011, 1.0), num_steps, num_paths, byrow = FALSE
+    #runif(num_steps * num_paths, 0.02066011, 1.0), num_steps, num_paths, byrow = FALSE ## 0.02066011 < p < 1, lower values of p produce out of range x values
+    runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
   )
   xg_mat <- xg_gen(p_vals, theta, a, b) ## Quantile function for g density
-  #g_mat <- apply(xg_mat, 2, function(xg_mat){g(xg_mat, theta, a, b)}) ## 2 for columns
   h_vect <- h_vect_gen(xg_mat, h)
-  
   g_dens <- apply(xg_mat, 2, function(x) {gn_1(x, theta, a, b)})
-  
+  #g_dens <- apply(xg_mat, 2, function(x) {g(x, theta, a, b)})
   f_dens <- replicate(num_paths, (1/3.9)^num_steps)
-  
-  
-  #w_star <- dunif(xg_mat, a, b)/g_mat ## dunif(x, -1.9, 2.0) = 0.2564103 for all x
+  #f_dens <- replicate(num_paths, (1/3.9))
   w_star <-  f_dens / g_dens
-  
   mu_hat <- cumsum(h_vect*w_star) / 1:num_paths ## Element wise matrix multiplication
   if(sigma_switch){
-    # *** missing ***
-  } else {sigma_hat <- NA}
-  list("mu_hat" = mu_hat, "h_vect" = h_vect, "gx_mat" = xg_mat, "sigma_hat" = sigma_hat, test = 1)
+    sigma_hat <- numeric(num_paths)
+    dev <- numeric(num_paths)
+    ci_l <- numeric(num_paths) ## c.i. lower
+    ci_u <- numeric(num_paths) ## c.i. upper
+    for(i in 1:num_paths){
+      sigma_hat[i] <- sd(h_vect[1:i]*w_star[1:i]) ## sd for paths 1 thru i
+      dev[i] <- 1.96 * sigma_hat[i] / sqrt(i)
+    }
+    ci_l <- mu_hat - dev
+    ci_u <- mu_hat + dev
+  } else {sigma_hat <- NA; ci_l = NA; ci_u = NA}
+  list("mu_hat" = mu_hat, "h_vect" = h_vect, "gx_mat" = xg_mat, "sigma_hat" = sigma_hat, "CI_lower" = ci_l, "CI_upper" = ci_u)
 }
 
 
@@ -185,7 +183,7 @@ g <- function(x_ki, theta, a, b) {
 # }
 
 
-## Inverse distribution (quantile function)
+## Inverse distribution (quantile function) for marginal g distribution function
 xg_gen <- function(p_mat, theta, a = -1.9, b = 2.0) {
   (
     log(
@@ -197,22 +195,14 @@ xg_gen <- function(p_mat, theta, a = -1.9, b = 2.0) {
 }
 
 
-## g for x-vector, version 1: power
+## gn for x-vector, version 1: power
 gn_1 <- function(smp_path, theta, a, b) {
   n = length(smp_path)
   phi <- (exp(b*theta) - exp(a*theta))/(theta)
   exp(theta * sum(smp_path)) / phi(theta, a, b)^n
 }
 
-## g function calls the phi function
-#g <- function(x, theta = 0.4, phi_func = phi) {
-#  n <- length(x)
-#  res <- 1 / phi_func(theta, -1.9, 2)**n * exp(theta * sum(x))
-#  return(res)
-#}
-
-
-## g for x-vector, version 2: for()
+## gn for x-vector, version 2: for()
 gn_2 <- function(smp_path, theta, a, b) {
   g = 1
   for(i in seq_along(smp_path)) {
@@ -221,7 +211,7 @@ gn_2 <- function(smp_path, theta, a, b) {
   g
 }
 
-## g function calls the phi function
+## gn function calls the phi function
 gn_3 <- function(x, theta = 0.4, phi_func = phi) {
   n <- length(x)
   res <- 1 / phi_func(theta, -1.9, 2)**n * exp(theta * sum(x))

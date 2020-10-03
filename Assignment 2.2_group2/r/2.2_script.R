@@ -86,27 +86,29 @@ str(tmp_int)
 ## IS
 
 ## Simulating x values with g:
-## Calculate min p value. Lower produces out of rance x values
-#-exp(-1.9)/(exp(a) - exp(b))
-## 0.02066011 < p < 1
+
 ## Test that x values are in [-1.9, 2.0]
 {
   p_vals <- matrix(
-    runif(num_steps * num_paths, 0.02066011, 1.0), num_steps, num_paths, byrow = FALSE
+    runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
   )
   range(xg_gen(p_vals, theta=1, a=-1.9, b=2.0))
 }
 
+## g is a density (integrates to 1, except for theta = 0, where g is undefined)
+
 
 ## Compare IS and MC for Sn-function
+num_paths = 1000 ## Number of paths
+num_steps = 100 ## Number of steps in path
 {
 set.seed(123)
 is_results <- IS(
   h = Sn, ## h(x) function
   #h = default,
   h_vect_gen = h_vect_gen_2, ## Generate matrix of h(x) values
-  num_steps = 100, 
-  num_paths = 1000,
+  num_steps, 
+  num_paths,
   theta = -0.2,
   a = -1.9,
   b = 2.0,
@@ -128,31 +130,67 @@ mc_results_1$mu_hat
 }
 
 ## Compare IS and MC for default function
+num_paths = 1000 ## Number of paths
+num_steps = 100 ## Number of steps in path
 {
-  #set.seed(123)
+  set.seed(42)
   is_results <- IS(
     h = default,
     h_vect_gen = h_vect_gen_2, ## Generate vector of h(x) values
     num_steps, 
-    num_paths = 1e5,
+    num_paths,
     theta = -0.2,
     a = -1.9,
     b = 2.0,
-    sigma_switch = FALSE
+    sigma_switch = TRUE
   )
-  is_results$mu_hat[n]
+  cat("mu_hat = ", paste(is_results$mu_hat[num_paths], "\n"))
+  cat("sigma_hat = ", is_results$sigma_hat[num_paths], "\n")
+  cat("c.i. = ", is_results$CI_lower[num_paths], "\n")
+  cat("c.i. = ", is_results$CI_upper[num_paths], "\n")
 }
 {
+  qplot(1:num_paths, is_results$mu_hat) + 
+    geom_ribbon(
+      mapping = aes(
+        ymin = is_results$CI_lower, 
+        ymax = is_results$CI_upper
+      ), fill = "gray") +
+    #coord_cartesian(ylim = c(min(is_results$CI_lower, na.rm = TRUE), max(is_results$CI_upper, na.rm = TRUE))) +
+    coord_cartesian(ylim = c(-0.001, 0.006)) +
+    geom_line() + 
+    #geom_point() +
+    labs(title = "Importance sampling", subtitle = paste(num_steps, " steps", num_paths, " paths"), x = "number of paths", y = "mu_hat")
+}
+
+
+
+
+{
   ## mu_hat = expected probability of default
-  set.seed(123)
+  set.seed(42)
   mc_results_2 <- MCI(
     default, ## h(x) function
     h_vect_gen_2, ## Generate vector of h(x) values
-    num_steps = 100,
-    num_paths = 1000,
-    runif(num_steps*num_paths, -1.9, 2.0)
+    num_steps,
+    num_paths,
+    runif(num_steps*num_paths, -1.9, 2.0),
+    sigma_switch = TRUE
   )
   mc_results_2$mu_hat
+}
+{
+  qplot(1:num_paths, mc_results_2$mu_hat) + 
+    geom_ribbon(
+      mapping = aes(
+        ymin = mc_results_2$CI_lower, 
+        ymax = mc_results_2$CI_upper
+      ), fill = "gray") +
+    #coord_cartesian(ylim = c(min(is_results$CI_lower, na.rm = TRUE), max(is_results$CI_upper, na.rm = TRUE))) +
+    coord_cartesian(ylim = c(-0.003, 0.009)) +
+    geom_line() + 
+    #geom_point() +
+    labs(title = "Monte Carlo", subtitle = paste(num_steps, " steps", num_paths, " paths"), x = "number of paths", y = "mu_hat")
 }
 
 
@@ -186,7 +224,7 @@ profvis(IS(
   h_mat_gen = h_mat_gen_2, ## Generate matrix of h(x) values
   num_steps = 100, 
   num_paths = 1000,
-  theta = 1,
+  theta = -0.2,
   a = -1.9,
   b = 2.0,
   sigma_switch = FALSE
@@ -202,6 +240,33 @@ profvis(IS(
 ## >> Runif ----
 
 ## >> Runtime wrt. n ----
+
+
+
+## *** ----
+## PLOT
+
+## Plot gn against theta
+{
+  num_curves = 1000
+  theta_min <- -1
+  theta_max <- -0.01
+  tmp_vals <- matrix(numeric(1000), 100, num_curves)
+  for(i in 1:num_curves) {
+    tmp_vals[, i] <- sapply(seq(theta_min, theta_max, 0.01), function(theta) {gn_1(xg_mat[,i], theta, a, b)})
+  }
+  #plot(seq(theta_min, theta_max, 0.01), tmp_vals, pch=16, cex = 0.3, xlab = "theta", ylab = "gn", log="y", main="lin-log")
+  #plot(seq(theta_min, theta_max, 0.01), tmp_vals[, 1], pch=16, cex = 0.3, xlab = "theta", ylab = "gn", main="lin-lin")
+  plot_data <- melt(tmp_vals) ## Create data frame with columns as groups
+  plot_data$Var1 <- rep(seq(theta_min, theta_max, 0.01), num_curves)
+  theta_test_plot = ggplot() +
+    geom_line(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2))) +
+    #scale_y_continuous(trans='log10') +
+    labs(title = "lin-log", subtitle = substitute(paste("gn wrt. theta for ",  num_curves, " simulated paths"), list(num_curves = num_curves)), x = "theta", y = "gn") +
+    theme(legend.position = "none")
+  theta_test_plot
+}
+
 
 
 
