@@ -38,9 +38,12 @@ str(tmp_int)
 
 df = data.frame(x_mat_1(1e5, 1, rfunc = runif(num_steps*num_paths, -1.9, 2.0)))
 names(df)="X1"
-ggplot(df, aes(x=X1)) + 
+dens_plot_1 <- ggplot(df, aes(x=X1)) + 
   geom_histogram(aes(y=..density..), colour="black", fill="white", bins = 10*log(100, 10))+
-  geom_density(alpha=.2, fill="#FF6666") 
+  geom_density(alpha=.2, fill="#FF6666")
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/dens_plot_1.png', width=1800, height=1200, res=300)
+# dens_plot_1
+# dev.off()
 
 
 ## gn
@@ -56,11 +59,14 @@ ggplot(df, aes(x=X1)) +
   ## Histogram of num_steps*num_paths values drawn from g
   df = data.frame(matrix(xg_mat[, 1:1000], num_steps*1000, 1))
   names(df)="X1"
-  ggplot(df, aes(x=X1)) + 
+  dens_plot_02 <- ggplot(df, aes(x=X1)) + 
     geom_histogram(aes(y=..density..), colour="black", fill="white", bins = 10*log(1e5, 10))+
     geom_density(alpha=.2, fill="#FF6666") +
     labs(title = paste("theta = ", theta))
 }
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/dens_plot_02.png', width=1800, height=1200, res=300)
+# dens_plot_02
+# dev.off()
 
 ## *** ----
 ## ESTIMATION ====
@@ -141,7 +147,7 @@ set.seed(123)
 is_results <- IS(
   h = Sn, ## h(x) function
   #h = default,
-  h_vect_gen = h_vect_gen_2, ## Generate matrix of h(x) values
+  h_vect_gen = h_vect_gen_3, ## Generate matrix of h(x) values
   num_steps, 
   num_paths,
   theta = -0.2,
@@ -156,7 +162,7 @@ is_results$mu_hat
 #set.seed(123)
 mc_results_1 <- MCI(
   Sn, ## h(x) function
-  h_vect_gen_2, ## Generate vector of h(x) values
+  h_vect_gen_3, ## Generate vector of h(x) values
   num_steps,
   num_paths,
   runif(num_steps*num_paths, -1.9, 2.0)
@@ -171,7 +177,7 @@ num_steps = 100 ## Number of steps in path
   set.seed(42)
   is_results <- IS(
     h = default,
-    h_vect_gen = h_vect_gen_2, ## Generate vector of h(x) values
+    h_vect_gen = h_vect_gen_3, ## Generate vector of h(x) values
     num_steps, 
     num_paths,
     theta = -0.2,
@@ -185,7 +191,7 @@ num_steps = 100 ## Number of steps in path
   cat("c.i. = ", is_results$CI_upper[num_paths], "\n")
 }
 {
-  qplot(1:num_paths, is_results$mu_hat) + 
+  IS_plot_01 <- qplot(1:num_paths, is_results$mu_hat) + 
     geom_ribbon(
       mapping = aes(
         ymin = is_results$CI_lower, 
@@ -197,7 +203,9 @@ num_steps = 100 ## Number of steps in path
     #geom_point() +
     labs(title = "Importance sampling", subtitle = paste(num_steps, " steps", num_paths, " paths"), x = "number of paths", y = "mu_hat")
 }
-
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/IS_plot_01.png', width=1800, height=1200, res=300)
+# IS_plot_01
+# dev.off()
 
 
 
@@ -206,7 +214,7 @@ num_steps = 100 ## Number of steps in path
   set.seed(42)
   mc_results_2 <- MCI(
     default, ## h(x) function
-    h_vect_gen_2, ## Generate vector of h(x) values
+    h_vect_gen_3, ## Generate vector of h(x) values
     num_steps,
     num_paths,
     runif(num_steps*num_paths, -1.9, 2.0),
@@ -215,7 +223,7 @@ num_steps = 100 ## Number of steps in path
   mc_results_2$mu_hat
 }
 {
-  qplot(1:num_paths, mc_results_2$mu_hat) + 
+  IS_plot_02 <- qplot(1:num_paths, mc_results_2$mu_hat) + 
     geom_ribbon(
       mapping = aes(
         ymin = mc_results_2$CI_lower, 
@@ -227,10 +235,14 @@ num_steps = 100 ## Number of steps in path
     #geom_point() +
     labs(title = "Monte Carlo", subtitle = paste(num_steps, " steps", num_paths, " paths"), x = "number of paths", y = "mu_hat")
 }
+png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/IS_plot_02.png', width=1800, height=1200, res=300)
+IS_plot_02
+dev.off()
 
 
 ## ***
 ## OPTIMAL THETA ====
+## > mu_hat wrt num_steps ----
 {
   set.seed(42)
   num_steps = 100
@@ -244,7 +256,7 @@ num_steps = 100 ## Number of steps in path
   for (i in 1:num_test_runs) {
     is_res_tmp <- IS(
       h = default,
-      h_vect_gen = h_vect_gen_2, ## Generate vector of h(x) values
+      h_vect_gen = h_vect_gen_3, ## Generate vector of h(x) values
       num_steps, 
       num_paths,
       theta_test_vector[i],
@@ -270,8 +282,7 @@ num_steps = 100 ## Number of steps in path
 }
 
 ## ***
-## xg ====
-## Ginv wrt theta
+## > Ginv wrt theta
 {
   a = -1.9
   b = 2.0
@@ -330,21 +341,21 @@ num_steps = 100 ## Number of steps in path
 
 
 ## ***
-## Ginv wrt p
+## > Ginv wrt p ----
 {
   num_steps = 100
   num_paths = 1e3
   a = -1.9
   b = 2.0
-  theta_vals = c(0, -0.9)
   
+  theta_vals <- c(-1.0, -0.6, -0.2, 0.2, 0.6, 1.0)
   p_vals <- seq(0.0, 1.0, 0.01)
   #test_seq <- test_seq[which(test_seq == 0)] ## remove 0 from list
   # p_vals <- matrix(
   #   runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
   # )
   
-  p_test_a <- sapply(
+  p_test_zero <- sapply(
     p_vals,
     function(p) {
       a = -1.9
@@ -352,99 +363,187 @@ num_steps = 100 ## Number of steps in path
       (p * b) + ((1 - p) * a)
     }
   )
-  p_test_b <- sapply(
-    p_vals,
-    function(p) {
-      theta=-1
-      (
-        log(
-          p*(
-            exp(b * theta)-exp(a * theta)
-          ) + exp(a * theta)
-        )
-      ) / theta
-    }
-  )
-  p_test_c <- sapply(
-    p_vals,
-    function(p) {
-      theta=-0.6
-      (
-        log(
-          p*(
-            exp(b * theta)-exp(a * theta)
-          ) + exp(a * theta)
-        )
-      ) / theta
-    }
-  )
-  p_test_d<- sapply(
-    p_vals,
-    function(p) {
-      theta=-0.2
-      (
-        log(
-          p*(
-            exp(b * theta)-exp(a * theta)
-          ) + exp(a * theta)
-        )
-      ) / theta
-    }
-  )
-  p_test_e<- sapply(
-    p_vals,
-    function(p) {
-      theta=0.2
-      (
-        log(
-          p*(
-            exp(b * theta)-exp(a * theta)
-          ) + exp(a * theta)
-        )
-      ) / theta
-    }
-  )
-  p_test_f<- sapply(
-    p_vals,
-    function(p) {
-      theta=0.6
-      (
-        log(
-          p*(
-            exp(b * theta)-exp(a * theta)
-          ) + exp(a * theta)
-        )
-      ) / theta
-    }
-  )
-  p_test_g<- sapply(
-    p_vals,
-    function(p) {
-      theta=1
-      (
-        log(
-          p*(
-            exp(b * theta)-exp(a * theta)
-          ) + exp(a * theta)
-        )
-      ) / theta
-    }
-  )
+  p_test_mat <- matrix(numeric(length(theta_vals ) * length(p_vals)), length(p_vals), length(theta_vals ))
+  for (i in 1:length(theta_vals)) {
+    p_test_mat[, i] <- sapply(
+      p_vals,
+      function(p) {
+        theta=theta_vals[i]
+        (
+          log(
+            p*(
+              exp(b * theta)-exp(a * theta)
+            ) + exp(a * theta)
+          )
+        ) / theta
+      }
+    )
+  }
   
-  
-  theta_test_plot_3 <- qplot(p_vals, p_test_a, xlab="p", ylab="Ginv(x)", colour = I("red")) + 
-    geom_point(aes(y = p_test_b), colour = I("green")) +
-    geom_point(aes(y = p_test_c), colour = I("orange")) +
-    geom_point(aes(y = p_test_d), colour = I("blue")) +
-    geom_point(aes(y = p_test_e), colour = I("black")) +
-    geom_point(aes(y = p_test_f), colour = I("cyan")) +
-    geom_point(aes(y = p_test_g), colour = I("magenta")) +
+  theta_test_plot_3 <- qplot(p_vals, p_test_zero, xlab="p", ylab="Ginv(x)", colour = I("red")) + 
+    geom_point(aes(y = p_test_mat[, 1]), colour = I("green")) +
+    geom_point(aes(y = p_test_mat[, 2]), colour = I("orange")) +
+    geom_point(aes(y = p_test_mat[, 3]), colour = I("blue")) +
+    geom_point(aes(y = p_test_mat[, 4]), colour = I("black")) +
+    geom_point(aes(y = p_test_mat[, 5]), colour = I("cyan")) +
+    geom_point(aes(y = p_test_mat[, 6]), colour = I("magenta")) +
     ylim(-2, 2.1) +
-    labs(title = "x-values from g-dristribution wrt p", subtitle = "red: theta = 0, green: theta = -1, magenta: theta = 1")
+    labs(title = "x-values from g-distribution wrt p", subtitle = "red: theta = 0, green: theta = -1, magenta: theta = 1")
+  theta_test_plot_3
 }
-png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_3.png', width=1800, height=1200, res=300)
-theta_test_plot_3
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_3.png', width=1800, height=1200, res=300)
+# theta_test_plot_3
+# dev.off()
+
+## ***
+## > sd(h(x)) wrt theta ----
+{
+  num_steps = 100
+  num_paths = 1e6
+  theta_vals = seq(-0.9, 0.9, 0.01)
+  #theta_vals = c(-0.5, 0.5)
+  num_test_runs = length(theta_vals)
+  
+  p_vals <- matrix(
+    runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
+  )
+  # xg_mat <- xg_gen(p_vals, theta = theta, a = -1.9, b = 2)
+  # h_vect_gen_3(xg_mat, default)
+  
+  sd_vect <- numeric(num_test_runs)
+  for (i in 1:num_test_runs) {
+    xg_mat <- xg_gen(p_vals, theta = theta_vals[i], a = -1.9, b = 2)
+    sd_vect_tmp <- sd(h_vect_gen_3(xg_mat, default))
+    sd_vect[i] <- sd_vect_tmp
+  }
+  range(sd_vect)
+  
+  ## Which theta value gives highest variance?
+  theta_opt = theta_vals[which(sd_vect==max(sd_vect))]
+  ## theta = -0.27
+  sd_test_plot_1 <- qplot(theta_vals, sd_vect, xlab="theta", ylab="sd(h(x))") +
+    geom_vline(xintercept = theta_opt, color = "red", size = 0.5) +
+    labs(title = "sd(h(x)) for x-values from g-distribution wrt theta", subtitle = paste("Optimal theta: ", theta_opt, ", Number of paths: ", num_paths))
+}
+png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_1.png', width=1800, height=1200, res=300)
+sd_test_plot_1
 dev.off()
+
+
+## ***
+## > sd(h(x)*w_star) wrt theta ----
+{
+  num_steps = 100
+  num_paths = 1e4
+  theta_vals = seq(-0.9, 0.9, 0.01)
+  num_test_runs = length(theta_vals)
+  
+  p_vals <- matrix(
+    runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
+  )
+  # xg_mat <- xg_gen(p_vals, theta = theta, a = -1.9, b = 2)
+  # h_vect_gen_3(xg_mat, default)
+  
+  sd_vect <- numeric(num_test_runs)
+  for (i in 1:num_test_runs) {
+    xg_mat <- xg_gen(p_vals, theta = theta_vals[i], a = -1.9, b = 2)
+    g_dens <- apply(xg_mat, 2, function(x) {gn_1(x, theta, a, b)})
+    f_dens <- replicate(num_paths, (1/3.9)^num_steps)
+    #f_dens <- replicate(num_paths, (1/3.9))
+    w_star <-  f_dens / g_dens
+    sd_vect_tmp <- sd(h_vect_gen_3(xg_mat, default) * w_star)
+    sd_vect[i] <- sd_vect_tmp
+  }
+  range(sd_vect)
+  
+  ## Which theta value gives highest variance?
+  theta_opt = theta_vals[which(sd_vect==max(sd_vect))]
+
+  sd_test_plot_2_linlog <- qplot(theta_vals, sd_vect, xlab="theta", ylab="sd(h(x) * w_star)") +
+    geom_vline(xintercept = theta_opt, color = "red", size = 0.5) +
+    scale_y_continuous(trans='log10') +
+    labs(title = "sd(h(x) * w_star) for x-values from g-distribution wrt theta (lin-log)", subtitle = paste("Optimal theta: ", theta_opt, ", Number of paths: ", num_paths))
+
+  sd_test_plot_2_linlin <- qplot(theta_vals, sd_vect, xlab="theta", ylab="sd(h(x) * w_star)") +
+    geom_vline(xintercept = theta_opt, color = "red", size = 0.5) +
+    #scale_y_continuous(trans='log10') +
+    labs(title = "sd(h(x) * w_star) for x-values from g-distribution wrt theta (lin-lin)", subtitle = paste("Optimal theta: ", theta_opt, ", Number of paths: ", num_paths))
+
+  sd_test_plot_2_linlin_cut <- qplot(theta_vals[-(1:95)], sd_vect[-(1:95)], xlab="theta", ylab="sd(h(x) * w_star)") +
+    geom_vline(xintercept = theta_opt, color = "red", size = 0.5) +
+    xlim(0, 1) +
+    #scale_y_continuous(trans='log10') +
+    labs(title = "sd(h(x) * w_star) for x-values from g-distribution wrt theta (lin-lin)", subtitle = paste("Optimal theta: ", theta_opt, ", Number of paths: ", num_paths))
+}
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_2_linlog.png', width=1800, height=1200, res=300)
+# sd_test_plot_2_linlog
+# dev.off()
+# 
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_2_linlin.png', width=1800, height=1200, res=300)
+# sd_test_plot_2_linlin
+# dev.off()
+# 
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_2_linlin_cut.png', width=1800, height=1200, res=300)
+# sd_test_plot_2_linlin_cut
+# dev.off()
+
+## ***
+## > sd(w_star) wrt theta ----
+{
+  num_steps = 100
+  num_paths = 1e4
+  theta_vals = seq(-0.9, 0.9, 0.01)
+  num_test_runs = length(theta_vals)
+  
+  p_vals <- matrix(
+    runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
+  )
+  # xg_mat <- xg_gen(p_vals, theta = theta, a = -1.9, b = 2)
+  # h_vect_gen_3(xg_mat, default)
+  
+  sd_vect <- numeric(num_test_runs)
+  for (i in 1:num_test_runs) {
+    xg_mat <- xg_gen(p_vals, theta = theta_vals[i], a = -1.9, b = 2)
+    g_dens <- apply(xg_mat, 2, function(x) {gn_1(x, theta, a, b)})
+    f_dens <- replicate(num_paths, (1/3.9)^num_steps)
+    #f_dens <- replicate(num_paths, (1/3.9))
+    w_star <-  f_dens / g_dens
+    sd_vect_tmp <- sd(w_star)
+    sd_vect[i] <- sd_vect_tmp
+  }
+  range(sd_vect)
+  
+  ## Which theta value gives highest variance?
+  theta_opt = theta_vals[which(sd_vect==max(sd_vect))]
+  
+  sd_test_plot_3_linlog <- qplot(theta_vals, sd_vect, xlab="theta", ylab="(d)w_star)") +
+    geom_vline(xintercept = theta_opt, color = "red", size = 0.5) +
+    scale_y_continuous(trans='log10') +
+    labs(title = "sd(w_star) for x-values from g-distribution wrt theta (lin-log)", subtitle = paste("Optimal theta: ", theta_opt, ", Number of paths: ", num_paths))
+  
+  sd_test_plot_3_linlin <- qplot(theta_vals, sd_vect, xlab="theta", ylab="sd(w_star)") +
+    geom_vline(xintercept = theta_opt, color = "red", size = 0.5) +
+    #scale_y_continuous(trans='log10') +
+    labs(title = "sd(w_star) for x-values from g-distribution wrt theta (lin-lin)", subtitle = paste("Optimal theta: ", theta_opt, ", Number of paths: ", num_paths))
+  
+  sd_test_plot_3_linlin_cut <- qplot(theta_vals[-(1:95)], sd_vect[-(1:95)], xlab="theta", ylab="sd(w_star)") +
+    geom_vline(xintercept = theta_opt, color = "red", size = 0.5) +
+    xlim(0, 1) +
+    #scale_y_continuous(trans='log10') +
+    labs(title = "sd(w_star) for x-values from g-distribution wrt theta (lin-lin)", subtitle = paste("Optimal theta: ", theta_opt, ", Number of paths: ", num_paths))
+}
+png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_3_linlog.png', width=1800, height=1200, res=300)
+sd_test_plot_3_linlog
+dev.off()
+
+png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_3_linlin.png', width=1800, height=1200, res=300)
+sd_test_plot_3_linlin
+dev.off()
+
+png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_3_linlin_cut.png', width=1800, height=1200, res=300)
+sd_test_plot_3_linlin_cut
+dev.off()
+
 
 ## **************************************
 
@@ -471,10 +570,10 @@ source("/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Sem
   set.seed(42)
   profvis(IS(
       h = default,
-      h_vect_gen = h_vect_gen_2, ## Generate vector of h(x) values
+      h_vect_gen = h_vect_gen_3, ## Generate vector of h(x) values
       num_steps, 
       num_paths,
-      theta = -0.2,
+      theta = -0.27,
       a = -1.9,
       b = 2.0,
       sigma_switch = TRUE
@@ -515,13 +614,15 @@ source("/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Sem
 }
 levels(bench_01$expr) <- c("loop", "apply")
 
-autoplot(bench_01) +
+bench_plot_01 <- autoplot(bench_01) +
   geom_jitter(position = position_jitter(0.2, 0), 
               aes(color = expr), alpha = 0.4) + 
   aes(fill = I("gray")) + 
   labs(title = "Benchmark of IS") +
   theme(legend.position = "none")
-
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/bench_plot_01.png', width=1800, height=1200, res=300)
+# bench_plot_01
+# dev.off()
 
 
 ## ***
@@ -540,12 +641,16 @@ bench_02 <- microbenchmark(h_vect_gen_1(xg_mat, default), h_vect_gen_2(xg_mat, d
 levels(bench_02$expr) <- c("if()", "apply()", "if() prealloc")
 summary(bench_02)
 
-autoplot(bench_02) +
+bench_plot_02 <- autoplot(bench_02) +
   geom_jitter(position = position_jitter(0.2, 0), 
               aes(color = expr), alpha = 0.4) + 
   aes(fill = I("gray")) + 
   labs(title = "Benchmark of h_vect_gen") +
   theme(legend.position = "none")
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/bench_plot_02.png', width=1800, height=1200, res=300)
+# bench_plot_02
+# dev.off()
+
 ## Conclusion: pre-alloc if() is faster
 ## ToDo: Plot runtimes of if() and apply() and if() w/ preallocated vector wrt. num_paths
 
@@ -563,12 +668,15 @@ bench_03 <- microbenchmark(default(x = xg_mat), default_if(x = xg_mat), times = 
 levels(bench_03$expr) <- c("default: any())", "default: if()")
 summary(bench_03)
 
-autoplot(bench_03) +
+bench_plot_03 <- autoplot(bench_03) +
   geom_jitter(position = position_jitter(0.2, 0), 
               aes(color = expr), alpha = 0.4) + 
   aes(fill = I("gray")) + 
   labs(title = "Benchmark of default()", subtitle = paste(num_paths, " paths")) +
   theme(legend.position = "none")
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/bench_plot_03.png', width=1800, height=1200, res=300)
+# bench_plot_03
+# dev.off()
 ## ToDo: Plot runtimes of default() and default_if() wrt. num_steps
 
 
@@ -585,25 +693,82 @@ autoplot(bench_03) +
 ## PLOT
 
 ## Plot gn against theta
+## lin-lin
 {
-  num_curves = 1000
+  num_curves = 1e4
   theta_min <- -1
-  theta_max <- -0.01
-  tmp_vals <- matrix(numeric(1000), 100, num_curves)
+  theta_max <- 1
+  theta_vals <- seq(theta_min, theta_max, 0.01)
+  theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
+  
+  tmp_vals <- matrix(length(theta_vals) * num_curves, length(theta_vals), num_curves)
   for(i in 1:num_curves) {
-    tmp_vals[, i] <- sapply(seq(theta_min, theta_max, 0.01), function(theta) {gn_1(xg_mat[,i], theta, a, b)})
+    tmp_vals[, i] <- sapply(theta_vals, function(theta) {gn_1(xg_mat[,i], theta, a, b)})
   }
   #plot(seq(theta_min, theta_max, 0.01), tmp_vals, pch=16, cex = 0.3, xlab = "theta", ylab = "gn", log="y", main="lin-log")
   #plot(seq(theta_min, theta_max, 0.01), tmp_vals[, 1], pch=16, cex = 0.3, xlab = "theta", ylab = "gn", main="lin-lin")
   plot_data <- melt(tmp_vals) ## Create data frame with columns as groups
-  plot_data$Var1 <- rep(seq(theta_min, theta_max, 0.01), num_curves)
-  theta_test_plot = ggplot() +
+  plot_data$Var1 <- rep(theta_vals, num_curves)
+  theta_test_plot_linlin = ggplot() +
     geom_line(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2))) +
     #scale_y_continuous(trans='log10') +
+    labs(title = "lin-lin", subtitle = substitute(paste("gn wrt. theta for ",  num_curves, " simulated paths"), list(num_curves = num_curves)), x = "theta", y = "gn") +
+    theme(legend.position = "none")
+  theta_test_plot_linlin
+}
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_linlin.png', width=1800, height=1200, res=300)
+# theta_test_plot_linlin
+# dev.off()
+
+## lin-log
+{
+  num_curves = 1e4
+  theta_min <- -1
+  theta_max <- 1
+  theta_vals <- seq(theta_min, theta_max, 0.01)
+  theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
+  
+  tmp_vals <- matrix(length(theta_vals) * num_curves, length(theta_vals), num_curves)
+  for(i in 1:num_curves) {
+    tmp_vals[, i] <- sapply(theta_vals, function(theta) {gn_1(xg_mat[,i], theta, a, b)})
+  }
+  plot_data <- melt(tmp_vals) ## Create data frame with columns as groups
+  plot_data$Var1 <- rep(theta_vals, num_curves)
+  theta_test_plot_linlog = ggplot() +
+    geom_line(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2))) +
+    scale_y_continuous(trans='log10') +
     labs(title = "lin-log", subtitle = substitute(paste("gn wrt. theta for ",  num_curves, " simulated paths"), list(num_curves = num_curves)), x = "theta", y = "gn") +
     theme(legend.position = "none")
-  theta_test_plot
+  #theta_test_plot_linlog
 }
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_linlog.png', width=1800, height=1200, res=300)
+# theta_test_plot_linlog
+# dev.off()
+
+## lin-log cut
+{
+  num_curves = 1e4
+  theta_min <- -1
+  theta_max <- -0.01
+  theta_vals <- seq(theta_min, theta_max, 0.01)
+  #theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
+  
+  tmp_vals <- matrix(length(theta_vals) * num_curves, length(theta_vals), num_curves)
+  for(i in 1:num_curves) {
+    tmp_vals[, i] <- sapply(theta_vals, function(theta) {gn_1(xg_mat[,i], theta, a, b)})
+  }
+  plot_data <- melt(tmp_vals) ## Create data frame with columns as groups
+  plot_data$Var1 <- rep(theta_vals, num_curves)
+  theta_test_plot_linlog_cut = ggplot() +
+    geom_line(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2))) +
+    scale_y_continuous(trans='log10') +
+    labs(title = "lin-log", subtitle = substitute(paste("gn wrt. theta for ",  num_curves, " simulated paths"), list(num_curves = num_curves)), x = "theta", y = "gn") +
+    theme(legend.position = "none")
+  theta_test_plot_linlog_cut
+}
+png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_linlog_cut.png', width=1800, height=1200, res=300)
+theta_test_plot_linlog_cut
+dev.off()
 
 
 
