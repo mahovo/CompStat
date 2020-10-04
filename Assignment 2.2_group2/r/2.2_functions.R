@@ -25,8 +25,18 @@ Sn = function(x){
 ## h function for calculating probability of default
 ## Returns 1 if default occurs in a given path, 0 otherwise
 default = function(x){
-  min(30 + cumsum(x)) <= 0 
+  any(30 + cumsum(x) <= 0)
 }
+
+default_if <- function(x)
+{
+  default <- 0
+  path <- 30 + cumsum(x)
+  if (any(path <= 0)) default <- 1
+  return(default)
+}
+
+
 
 ## Generate matrix of simulated values of h(x), version 1: for()
 ## x_mat is the matrix of simulated X-values.
@@ -48,6 +58,16 @@ h_vect_gen_1 <- function(x_mat, h) {
 h_vect_gen_2 <- function(x_mat, h) {
   ## For each column, apply h to the n x-values
   h_vect <- apply(x_mat, 2, h) ## 2 for columns
+  h_vect
+}
+
+## for() loop with pre-assigned vector
+h_vect_gen_3 <- function(x_mat, h) {
+  num_paths <- ncol(x_mat) ## Each column is a sample path
+  h_vect <- numeric(num_paths)
+  for(i in 1:num_paths){
+    h_vect[i] = h(x_mat[ ,i]) ## For each column, apply h to the n x-values
+  }
   h_vect
 }
 
@@ -185,13 +205,15 @@ g <- function(x_ki, theta, a, b) {
 
 ## Inverse distribution (quantile function) for marginal g distribution function
 xg_gen <- function(p_mat, theta, a = -1.9, b = 2.0) {
-  (
-    log(
-      p_mat*(
-        exp(b * theta)-exp(a * theta)
-      ) + exp(a * theta)
-    )
+  if(theta != 0.0) {
+    (
+      log(
+        p_mat*(
+          exp(b * theta)-exp(a * theta)
+        ) + exp(a * theta)
+      )
   ) / theta
+  } else {matrix(runif(length(p_mat), a, b), dim(p_mat))} ## Exception if theta=0: Uniform distribution
 }
 
 
