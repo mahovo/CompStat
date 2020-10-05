@@ -619,6 +619,77 @@ num_steps = 100 ## Number of steps in path
 # sd_test_plot_3_linlin_cut
 # dev.off()
 
+## gn wrt. theta ----
+## lin-log
+{
+  num_curves = 1e2
+  theta_min <- -1
+  theta_max <- 1
+  theta_vals <- seq(theta_min, theta_max, 0.02)
+  theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
+  
+  num_steps <- 100
+  num_paths <- 1
+  
+  f_dens <- (1/3.9)^num_steps
+  
+  tmp_vals <- matrix(length(theta_vals) * num_curves, length(theta_vals), num_curves)
+  ## Do 100 times:
+  ## For each theta value, create a sample paths of x-values from the g-distribution, 
+  ## and calculate a gn value
+  
+  for(i in 1:num_curves) {
+    tmp_vals[, i] <- sapply(theta_vals, function(theta) {
+      p_vals <- matrix(
+        runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
+      )
+      xg_mat <- xg_gen(p_vals, theta, a = -1.9, b = 2)
+      gn_1(xg_mat, theta, a, b)
+      #apply(xg_mat, 2, function(x) {gn_1(x, theta, a = -1.9, b = 2)})
+    })
+  }
+  plot_data <- melt(tmp_vals) ## Create data frame with columns as groups
+  plot_data$Var1 <- rep(theta_vals, num_curves)
+  theta_test_plot_linlog = ggplot() +
+    geom_point(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2)), size = 0.2) +
+    scale_y_continuous(trans='log10') +
+    geom_hline(yintercept=f_dens) +
+    geom_text(data=data.frame(x=0, y=f_dens), aes(x, y), label="fn", vjust=-0.5, hjust=17.5) +
+    labs(title = "lin-log", subtitle = substitute(paste("gn wrt. theta for ",  num_curves, " simulations"), list(num_curves = num_curves)), x = "theta", y = "gn") +
+    theme(legend.position = "none")
+  theta_test_plot_linlog
+}
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_linlog.png', width=1800, height=1200, res=300)
+# theta_test_plot_linlog
+# dev.off()
+
+## lin-log cut
+{
+  num_curves = 1e4
+  theta_min <- -1
+  theta_max <- -0.01
+  theta_vals <- seq(theta_min, theta_max, 0.01)
+  #theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
+  
+  tmp_vals <- matrix(length(theta_vals) * num_curves, length(theta_vals), num_curves)
+  for(i in 1:num_curves) {
+    tmp_vals[, i] <- sapply(theta_vals, function(theta) {gn_1(xg_mat[,i], theta, a, b)})
+  }
+  plot_data <- melt(tmp_vals) ## Create data frame with columns as groups
+  plot_data$Var1 <- rep(theta_vals, num_curves)
+  theta_test_plot_linlog_cut = ggplot() +
+    geom_line(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2))) +
+    scale_y_continuous(trans='log10') +
+    labs(title = "lin-log", subtitle = substitute(paste("gn wrt. theta for ",  num_curves, " simulated paths"), list(num_curves = num_curves)), x = "theta", y = "gn") +
+    theme(legend.position = "none")
+  #theta_test_plot_linlog_cut
+}
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_linlog_cut.png', width=1800, height=1200, res=300)
+# theta_test_plot_linlog_cut
+# dev.off()
+
+
+
 
 ## **************************************
 
@@ -762,80 +833,49 @@ bench_plot_03 <- autoplot(bench_03) +
 
 ## >> Runtime wrt. n ----
 
-
-
-## *** ----
-## PLOT
-
-## Plot gn wrt. theta
-## lin-log
 {
-  num_curves = 1e2
-  theta_min <- -1
-  theta_max <- 1
-  theta_vals <- seq(theta_min, theta_max, 0.02)
-  theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
+  minn = 1
+  maxn = 5
+  num_paths = 10^maxn
+  num_steps = 100
   
-  num_steps <- 100
-  num_paths <- 1
+  conf <- expand.grid(
+    fun = c("h_vect_gen_1", "h_vect_gen_2", "h_vect_gen_3", "h_vect_gen_4"),
+    n = 10^(minn:maxn)
+  )
   
-  f_dens <- (1/3.9)^num_steps
+  set.seed(42)
+  p_vals <- matrix(
+    runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
+  )
+  xg_mat <- xg_gen(p_vals, theta = -0.27, a = -1.9, b = 2)
   
-  tmp_vals <- matrix(length(theta_vals) * num_curves, length(theta_vals), num_curves)
-  ## Do 100 times:
-  ## For each theta value, create a sample paths of x-values from the g-distribution, 
-  ## and calculate a gn value
+  calls <- paste0(conf[, 1], "(xg_mat[, 1:", conf[, 2], "])")
+  expr_list <- lapply(calls, function(x) parse(text = x)[[1]])
+  kern_benchmarks <- microbenchmark(list = expr_list, times = 40L)
   
-  for(i in 1:num_curves) {
-    tmp_vals[, i] <- sapply(theta_vals, function(theta) {
-      p_vals <- matrix(
-        runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
-      )
-      xg_mat <- xg_gen(p_vals, theta, a = -1.9, b = 2)
-      gn_1(xg_mat, theta, a, b)
-      #apply(xg_mat, 2, function(x) {gn_1(x, theta, a = -1.9, b = 2)})
-    })
-  }
-  plot_data <- melt(tmp_vals) ## Create data frame with columns as groups
-  plot_data$Var1 <- rep(theta_vals, num_curves)
-  theta_test_plot_linlog = ggplot() +
-    geom_point(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2)), size = 0.2) +
-    scale_y_continuous(trans='log10') +
-    geom_hline(yintercept=f_dens) +
-    geom_text(data=data.frame(x=0, y=f_dens), aes(x, y), label="fn", vjust=-0.5, hjust=17.5) +
-    labs(title = "lin-log", subtitle = substitute(paste("gn wrt. theta for ",  num_curves, " simulations"), list(num_curves = num_curves)), x = "theta", y = "gn") +
-    theme(legend.position = "none")
-  theta_test_plot_linlog
+  class(kern_benchmarks) <- "data.frame"
+  kern_benchmarks <- dplyr::bind_cols(conf, expr = calls) %>% 
+    dplyr::left_join(kern_benchmarks, .)
+  
+  kern_benchmarks$time = kern_benchmarks$time/1000 ## Convert from nanoseconds to milliseconds
+  
+  
+  runtime_h_vect_gen_03 <- ggplot(kern_benchmarks, aes(x = n, y = time, color = fun)) + 
+    geom_abline(intercept = 0, slope = 1, color = "gray", linetype = 2) +
+    stat_summary(fun = "median", geom = "line") + 
+    stat_summary(fun = "median", geom = "point") + 
+    #facet_wrap(~ fun) + 
+    scale_x_continuous(trans = "log10") + 
+    scale_y_continuous("Time (ms)", trans = "log10") +
+    #scale_y_continuous("Time (ms)", trans = "log10", 
+    #                    breaks = c(1e5, 1e6, 1e7, 1e8), 
+    #                    labels = c("0.1", "1", "10", "100")) +
+    scale_color_discrete("Function:", labels = c("apply", "f (a)", "f (b)", "rcpp")) + 
+    theme(legend.position="right")
+  
+  runtime_h_vect_gen_03
+  # png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/runtime_h_vect_gen_03.png', width=1800, height=1200, res=300)
+  # runtime_h_vect_gen_03
+  # dev.off()
 }
-# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_linlog.png', width=1800, height=1200, res=300)
-# theta_test_plot_linlog
-# dev.off()
-
-## lin-log cut
-{
-  num_curves = 1e4
-  theta_min <- -1
-  theta_max <- -0.01
-  theta_vals <- seq(theta_min, theta_max, 0.01)
-  #theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
-  
-  tmp_vals <- matrix(length(theta_vals) * num_curves, length(theta_vals), num_curves)
-  for(i in 1:num_curves) {
-    tmp_vals[, i] <- sapply(theta_vals, function(theta) {gn_1(xg_mat[,i], theta, a, b)})
-  }
-  plot_data <- melt(tmp_vals) ## Create data frame with columns as groups
-  plot_data$Var1 <- rep(theta_vals, num_curves)
-  theta_test_plot_linlog_cut = ggplot() +
-    geom_line(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2))) +
-    scale_y_continuous(trans='log10') +
-    labs(title = "lin-log", subtitle = substitute(paste("gn wrt. theta for ",  num_curves, " simulated paths"), list(num_curves = num_curves)), x = "theta", y = "gn") +
-    theme(legend.position = "none")
-  #theta_test_plot_linlog_cut
-}
-png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_linlog_cut.png', width=1800, height=1200, res=300)
-theta_test_plot_linlog_cut
-dev.off()
-
-
-
-
