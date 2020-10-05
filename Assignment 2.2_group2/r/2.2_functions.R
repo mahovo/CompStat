@@ -85,6 +85,7 @@ cppFunction('
         acc += x(j, i);
         if( (30 + acc) <= 0) {
           h_vect[i] = 1;
+          break;
         }
       }
       acc = 0;
