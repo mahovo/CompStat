@@ -38,11 +38,22 @@ default_if <- function(x)
 
 
 
+
+## Generate matrix of simulated values of h(x), version 2: apply()
+## x_mat is the matrix of simulated X-values.
+## h is a function, h(x). Specifically in this assignment, h(x) is Sn.
+## num_paths is the number of simulated paths.
+h_vect_gen_1 <- function(x_mat, h = default) {
+  ## For each column, apply h to the n x-values
+  h_vect <- apply(x_mat, 2, h) ## 2 for columns
+  h_vect
+}
+
 ## Generate matrix of simulated values of h(x), version 1: for()
 ## x_mat is the matrix of simulated X-values.
 ## h is a function, h(x). Specifically in this assignment, h is Sn.
 ## num_paths is the number of simulated paths.
-h_vect_gen_1 <- function(x_mat, h) {
+h_vect_gen_2 <- function(x_mat, h = default) {
   h_vect <- NULL
   num_paths <- ncol(x_mat) ## Each column is a sample path
   for(i in 1:num_paths){
@@ -51,18 +62,8 @@ h_vect_gen_1 <- function(x_mat, h) {
   h_vect
 }
 
-## Generate matrix of simulated values of h(x), version 2: apply()
-## x_mat is the matrix of simulated X-values.
-## h is a function, h(x). Specifically in this assignment, h(x) is Sn.
-## num_paths is the number of simulated paths.
-h_vect_gen_2 <- function(x_mat, h) {
-  ## For each column, apply h to the n x-values
-  h_vect <- apply(x_mat, 2, h) ## 2 for columns
-  h_vect
-}
-
 ## for() loop with pre-assigned vector
-h_vect_gen_3 <- function(x_mat, h) {
+h_vect_gen_3 <- function(x_mat, h = default) {
   num_paths <- ncol(x_mat) ## Each column is a sample path
   h_vect <- numeric(num_paths)
   for(i in 1:num_paths){
@@ -70,6 +71,27 @@ h_vect_gen_3 <- function(x_mat, h) {
   }
   h_vect
 }
+
+## h_vect_gen_1
+cppFunction('
+  NumericVector h_vect_gen_4(NumericMatrix x) {
+    int num_steps = x.nrow();
+    int num_paths = x.ncol();
+    double acc = 0;
+    NumericVector h_vect(num_paths);
+    for(int i=0; i<num_paths; ++i) {
+      h_vect[i] = 0;
+      for(int j=0; j<num_steps; ++j) {
+        acc += x(j, i);
+        if( (30 + acc) <= 0) {
+          h_vect[i] = 1;
+        }
+      }
+      acc = 0;
+    }
+    return h_vect;
+  }
+')
 
 ## MC integration.
 ## Outputs:
@@ -176,7 +198,7 @@ IS <- function(h, h_vect_gen, num_steps, num_paths, theta, a, b, sigma_switch = 
     ci_l <- mu_hat - dev
     ci_u <- mu_hat + dev
   } else {sigma_hat <- NA; ci_l = NA; ci_u = NA}
-  list("mu_hat" = mu_hat, "h_vect" = h_vect, "gx_mat" = xg_mat, "sigma_hat" = sigma_hat, "CI_lower" = ci_l, "CI_upper" = ci_u)
+  list("mu_hat" = mu_hat, "h_vect" = h_vect, "gx_mat" = xg_mat, "sigma_hat" = sigma_hat, "CI_lower" = ci_l, "CI_upper" = ci_u, "w_star" = w_star)
 }
 
 
@@ -184,7 +206,9 @@ IS <- function(h, h_vect_gen, num_steps, num_paths, theta, a, b, sigma_switch = 
 ## phi
 phi <- function(theta, a, b) {
   #integrate(function(z){exp(theta*z)}, a, b)
-  (exp(b*theta) - exp(a*theta))/theta
+  if(theta != 0) {
+   (exp(b*theta) - exp(a*theta))/theta
+  } else {0}
 }
 
 
@@ -195,6 +219,7 @@ phi <- function(theta, a, b) {
 g <- function(x_ki, theta, a, b) {
   exp(theta * x_ki) / phi(theta, a, b)
 }
+## ToDo: Exception for phi = 0
 
 ## Generate random x matrix from g distribution
 ## p_vect is a vector of random probabilities (vals in [0,1])
