@@ -244,6 +244,7 @@ xg_gen <- function(p_mat, theta, a = -1.9, b = 2.0) {
 
 
 ## gn for x-vector, version 1: power
+## Output: number
 gn_1 <- function(smp_path, theta, a, b) {
   n = length(smp_path)
   phi <- (exp(b*theta) - exp(a*theta))/(theta)
