@@ -14,7 +14,7 @@
   library(profvis)
   library(Matrix)
   library(reshape2)
-  library(plyr)
+  #library(plyr)
   library(dplyr)
   library(Rcpp)
 
@@ -504,8 +504,8 @@ num_steps = 100 ## Number of steps in path
 ## > sd(h(x)*w_star) wrt theta ----
 {
   num_steps = 100
-  num_paths = 1e4
-  theta_vals = seq(-0.9, 0.9, 0.01)
+  num_paths = 1e2
+  theta_vals = seq(-1.0, 1.0, 0.1)
   num_test_runs = length(theta_vals)
   
   p_vals <- matrix(
@@ -514,18 +514,66 @@ num_steps = 100 ## Number of steps in path
   # xg_mat <- xg_gen(p_vals, theta = theta, a = -1.9, b = 2)
   # h_vect_gen_3(xg_mat, default)
   
+  
+  ## For each theta value:
+  ## - Generate num_paths paths of num_steps steps
+  ## - Calcuate a vector gn-density density values for that theta value
   sd_vect <- numeric(num_test_runs)
+  g_dens_mat <- matrix(numeric(num_test_runs * num_paths), num_paths, num_test_runs)
+  w_star_mat <- matrix(numeric(num_test_runs * num_paths), num_paths, num_test_runs)
   for (i in 1:num_test_runs) {
     xg_mat <- xg_gen(p_vals, theta = theta_vals[i], a = -1.9, b = 2)
     g_dens <- apply(xg_mat, 2, function(x) {gn_1(x, theta = theta_vals[i], a = -1.9, b = 2)})
     f_dens <- replicate(num_paths, (1/3.9)^num_steps)
     #f_dens <- replicate(num_paths, (1/3.9))
-    w_star <-  f_dens / g_dens
-    sd_vect_tmp <- sd(h_vect_gen_3(xg_mat, default) * w_star)
+    g_dens_mat[, i] <- g_dens
+    w_star_mat[, i] <-  f_dens / g_dens
+    sd_vect_tmp <- sd(h_vect_gen_3(xg_mat, default) * w_star_mat[, i])
     sd_vect[i] <- sd_vect_tmp
   }
-  range(sd_vect)
+  # range(sd_vect)
+  # range(w_star_mat)
+  # range(g_dens_mat)
+  # sum(g_dens_mat == Inf) ## 1000 g_dens vals are 0. I.e. those for theta=0
+  # ((1/3.9)^num_steps) / min(g_dens_mat) ## max w_star
+
   
+  g_dens_mat_plot_data <- melt(g_dens_mat) ## Create data frame with columns as groups
+  g_dens_mat_plot_data$Var2 <- rep(theta_vals, each = num_paths)
+  
+  theta_g_dens_plot <-  ggplot() +
+    geom_point(data = g_dens_mat_plot_data, aes(x = Var2, y = value, group = Var1, colour=factor(Var1)), size = 0.2) +
+    geom_line(data = g_dens_mat_plot_data, aes(x = Var2, y = value, group = Var1, colour=factor(Var1)), size = 0.2) +
+    scale_y_continuous(trans='log10') +
+    geom_hline(yintercept=7.82599e-60) +
+    geom_text(data=data.frame(x=0, y=7.82599e-60), aes(x, y), label="fn", vjust=-0.5, hjust=17.5) +
+    labs(title = "lin-log", subtitle = paste("gn wrt. theta for",  num_paths, "simulations at each theta"), x = "theta", y = "gn") +
+    theme(legend.position = "none")
+
+  
+  w_star_mat_plot_data <- melt(w_star_mat) ## Create data frame with columns as groups
+  w_star_mat_plot_data$Var2 <- rep(theta_vals, each = num_paths)
+  
+  theta_w_star_plot <- ggplot() +
+    geom_point(data = w_star_mat_plot_data, aes(x = Var2, y = value, group = Var1, colour=factor(Var1)), size = 0.2) +
+    geom_line(data = w_star_mat_plot_data, aes(x = Var2, y = value, group = Var1, colour=factor(Var1)), size = 0.2) +
+    scale_y_continuous(trans='log10') +
+    labs(title = "lin-log", subtitle = paste("w_star wrt. theta for",  num_paths, "simulations at each theta"), x = "theta", y = "w_star") +
+    theme(legend.position = "none")
+
+}
+{
+theta_g_dens_plot
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_g_dens_plot.png', width=1800, height=1200, res=300)
+# theta_g_dens_plot
+# dev.off()
+
+theta_w_star_plot
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_w_star_plot.png', width=1800, height=1200, res=300)
+# theta_w_star_plot
+# dev.off()
+}
+{ 
   ## Which theta value gives highest variance?
   theta_opt = theta_vals[which(sd_vect==max(sd_vect))]
 
@@ -664,23 +712,25 @@ num_steps = 100 ## Number of steps in path
 
 
 
-## gn wrt. theta ----
+## > gn wrt. theta ----
 ## lin-log
 {
-  num_curves = 1e2
+  num_curves = 1e1
   theta_min <- -1
   theta_max <- 1
   theta_vals <- seq(theta_min, theta_max, 0.02)
-  theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
+  #theta_vals <- theta_vals[-which(theta_vals == 0)] # Remove theta = 0, see phi()
   
   num_steps <- 100
   num_paths <- 1
+  a = -1.9
+  b = 2.0
   
   f_dens <- (1/3.9)^num_steps
   
   tmp_vals <- matrix(length(theta_vals) * num_curves, length(theta_vals), num_curves)
   ## Do 100 times:
-  ## For each theta value, create a sample paths of x-values from the g-distribution, 
+  ## For each theta value, create a sample single paths of x-values from the g-distribution, 
   ## and calculate a gn value
   
   for(i in 1:num_curves) {
@@ -689,7 +739,7 @@ num_steps = 100 ## Number of steps in path
         runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
       )
       xg_mat <- xg_gen(p_vals, theta, a = -1.9, b = 2)
-      gn_1(xg_mat, theta, a, b)
+      gn_1(xg_mat, theta, a, b) ## A number
       #apply(xg_mat, 2, function(x) {gn_1(x, theta, a = -1.9, b = 2)})
     })
   }
@@ -697,6 +747,7 @@ num_steps = 100 ## Number of steps in path
   plot_data$Var1 <- rep(theta_vals, num_curves)
   theta_test_plot_linlog = ggplot() +
     geom_point(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2)), size = 0.2) +
+    geom_line(data = plot_data, aes(x = Var1, y = value, group = Var2, colour=factor(Var2)), size = 0.2) +
     scale_y_continuous(trans='log10') +
     geom_hline(yintercept=f_dens) +
     geom_text(data=data.frame(x=0, y=f_dens), aes(x, y), label="fn", vjust=-0.5, hjust=17.5) +
@@ -707,6 +758,13 @@ num_steps = 100 ## Number of steps in path
 # png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/theta_test_plot_linlog.png', width=1800, height=1200, res=300)
 # theta_test_plot_linlog
 # dev.off()
+
+## Why spike at theta=0?
+## theta =0 -> phi = 0 -> gn = inf -> w_star = 0
+## For theta = 0, w_star should be 1, so mu_hat_IS = mu_hat_MC.
+## Instead for theta = 0, all weights are 0.
+## However, close to theta=0, mu_hat_IS  will be close to mu_hat_MC
+range(tmp_vals)
 
 ## lin-log cut
 {
@@ -777,7 +835,7 @@ source("/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Sem
 ## BENCHMARKING ----
 
 ## ***
-## IS w/ h_vect_gen_1 vs IS w/ h_vect_gen_2
+## > IS w/ h_vect_gen_1 vs IS w/ h_vect_gen_2 ----
 {
   bench_01 <- microbenchmark(
     IS(
@@ -817,7 +875,7 @@ bench_plot_01 <- autoplot(bench_01) +
 
 
 ## ***
-## h_vect_gen: if() vs apply() vs if() w/ preallocated vector
+## > h_vect_gen: if() vs apply() vs if() w/ preallocated vector ----
 {
   num_steps = 100
   num_paths = 1e5
@@ -828,11 +886,12 @@ bench_plot_01 <- autoplot(bench_01) +
   xg_mat <- xg_gen(p_vals, theta = theta, a = -1.9, b = 2)
 }
 
-bench_02b <- microbenchmark(h_vect_gen_1(xg_mat, default), h_vect_gen_2(xg_mat, default), h_vect_gen_3(xg_mat, default), h_vect_gen_4(xg_mat))
-levels(bench_02b$expr) <- c("if()", "apply()", "if() prealloc")
-summary(bench_02b)
+bench_02 <- microbenchmark(h_vect_gen_1(xg_mat, default), h_vect_gen_2(xg_mat, default), h_vect_gen_3(xg_mat, default), h_vect_gen_4(xg_mat))
+levels(bench_02b$expr) <- c("apply()", "if()", "if() prealloc", "rcpp")
+bench_02
+summary(bench_02)
 
-bench_plot_02 <- autoplot(bench_02) +
+bench_plot_02 <- autoplot(bench_02b) +
   geom_jitter(position = position_jitter(0.2, 0), 
               aes(color = expr), alpha = 0.4) + 
   aes(fill = I("gray")) + 
@@ -847,7 +906,7 @@ bench_plot_02 <- autoplot(bench_02) +
 
 
 ## ***
-## default(): any() vs if()
+## > default(): any() vs if() ----
 num_steps = 1e5
 num_paths = 1 ## Only look at one path (vector)
 p_vals <- matrix(
@@ -870,13 +929,14 @@ bench_plot_03 <- autoplot(bench_03) +
 # dev.off()
 ## ToDo: Plot runtimes of default() and default_if() wrt. num_steps
 
+## ***
+## > Sn_mat_gen_1 vs Sn_mat_gen_2 ----
 
-## > TESTS ----
-## >> Sn_mat_gen_1 vs Sn_mat_gen_2 ----
+## ***
+## > Runif ----
 
-## >> Runif ----
-
-## >> Runtime wrt. n ----
+## ***
+## > Runtime wrt. n ----
 
 {
   minn = 1
