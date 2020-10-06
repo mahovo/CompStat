@@ -173,14 +173,14 @@ MCI_ruin_vectorized <- function(n, m, a, b) {
 
 ## IS function
 
-IS <- function(h, h_vect_gen, num_steps, num_paths, theta, a, b, sigma_switch = TRUE) {
+IS <- function(h, h_vect_gen, num_steps, num_paths, theta, a, b, sigma_switch = TRUE, ...) {
   ## p_vals is a matrix of random probabilities
   p_vals <- matrix(
     #runif(num_steps * num_paths, 0.02066011, 1.0), num_steps, num_paths, byrow = FALSE ## 0.02066011 < p < 1, lower values of p produce out of range x values
     runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
   )
   xg_mat <- xg_gen(p_vals, theta, a, b) ## Quantile function for g density
-  h_vect <- h_vect_gen(xg_mat, h)
+  h_vect <- h_vect_gen(xg_mat, ...)
   g_dens <- apply(xg_mat, 2, function(x) {gn_1(x, theta, a, b)})
   #g_dens <- apply(xg_mat, 2, function(x) {g(x, theta, a, b)})
   f_dens <- replicate(num_paths, (1/3.9)^num_steps)
