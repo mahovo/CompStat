@@ -466,7 +466,6 @@ num_steps = 100 ## Number of steps in path
 # theta_test_plot_3
 # dev.off()
 
-## ***
 ## > sd(h(x)) wrt theta ----
 {
   num_steps = 100
@@ -618,6 +617,52 @@ num_steps = 100 ## Number of steps in path
 # png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_3_linlin_cut.png', width=1800, height=1200, res=300)
 # sd_test_plot_3_linlin_cut
 # dev.off()
+
+
+## ***
+## > sd mu_hat wrt theta ----
+{
+  num_steps = 100
+  num_paths = 1e5
+  theta_vals = seq(-1.0, 1.0, 0.1)
+  #theta_vals = c(-0.5, 0.5)
+  num_test_runs = length(theta_vals)
+  
+  p_vals <- matrix(
+    runif(num_steps * num_paths, 0.0, 1.0), num_steps, num_paths, byrow = FALSE
+  )
+  
+  sd_vect <- numeric(num_test_runs)
+  for (i in 1:num_test_runs) {
+    xg_mat <- xg_gen(p_vals, theta = theta_vals[i], a = -1.9, b = 2)
+    is_result <- IS(
+      default,
+      h_vect_gen = h_vect_gen_4, ## Generate vector of h(x) values
+      num_steps, 
+      num_paths,
+      theta = theta_vals[i],
+      a = -1.9,
+      b = 2.0,
+      sigma_switch = TRUE
+    )
+    sd_vect[i] <- is_result$sigma[num_paths]
+  }
+  print(paste("Range of sd(mu_hat): [",range(sd_vect)[1], ", ", range(sd_vect)[2], "]"))
+  
+  
+  ## Which theta value gives lowest variance?
+  theta_opt = theta_vals[which(sd_vect==min(sd_vect))]
+  ## theta = -0.27
+  sd_test_plot_4 <- qplot(theta_vals, sd_vect, xlab="theta", ylab="sd(mu_hat)") +
+    geom_vline(xintercept = theta_opt, color = "red", size = 0.5) +
+    scale_y_continuous(trans='log10') +
+    labs(title = "sd(mu_hat) for x-values from g-distribution wrt theta", subtitle = paste("Optimal theta: ", theta_opt, ", Number of paths: ", num_paths))
+}
+# png('/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 2.2_group2/images/sd_test_plot_4.png', width=1800, height=1200, res=300)
+# sd_test_plot_4
+# dev.off()
+
+
 
 ## gn wrt. theta ----
 ## lin-log
