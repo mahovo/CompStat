@@ -72,11 +72,11 @@ par(mfrow=c(1,1))
 
 ## > t-distribution mixture ----
 {
-  p <- 0.25
-  mu1 <- 1
-  mu2 <- 4
+  p <- 0.5
+  mu1 <- -10
+  mu2 <- 10
   sigma1 <- 1
-  sigma2 <- 2
+  sigma2 <- 1
   nu <- 5
   n <- 10000
   z <- sample(c(TRUE, FALSE), n, replace = TRUE, prob = c(p, 1 - p))
@@ -107,9 +107,9 @@ par(mfrow=c(1,1))
 
 
 {
-  set.seed(2603)
+  set.seed(5150)
   par <- runif(5, 0.1, 1)
-  #par <- c(0.20, -3, 3, 1, 1)
+  par <- c(0.4, -5, 5, 2, 2)
   EM_tracer = tracer(c('sum_sq_diff'), N = 1)
   EM(
     par,
@@ -126,6 +126,13 @@ par(mfrow=c(1,1))
   #summary(EM_tracer)
 }
 
+EM_trace <- summary(EM_tracer)
+# EM_trace <- transform(
+#   EM_trace,
+#   n = 1:nrow(EM_trace),
+#   par_norm_diff = sqrt((par0.1 - par.1)^2 + (par0.2 - par.2)^2)
+# )
+qplot(1:nrow(EM_trace), sum_sq_diff, data = EM_trace)
 
 
 
