@@ -73,7 +73,7 @@ par(mfrow=c(1,1))
 ## > t-distribution mixture ----
 {
   p <- 0.25
-  mu1 <- -3.5
+  mu1 <- 1
   mu2 <- 4
   sigma1 <- 1
   sigma2 <- 2
@@ -107,20 +107,22 @@ par(mfrow=c(1,1))
 
 
 {
-  #set.seed(2603)
-  par <- c(runif(5, 0.1, 1))
+  set.seed(2603)
+  par <- runif(5, 0.1, 1)
+  #par <- c(0.20, -3, 3, 1, 1)
   EM_tracer = tracer(c('sum_sq_diff'), N = 1)
   EM(
     par,
-    x,
+    y,
     d = 0.8, 
     c = 0.1, 
-    gamma0 = 0.01,
+    gamma0 = 0.00001,
     maxit = 1000,
-    epsilon = 1e-6,
+    epsilon = 1e-8,
     #cb = NULL
     cb = EM_tracer$trace
   )
+  #print(par)
   #summary(EM_tracer)
 }
 

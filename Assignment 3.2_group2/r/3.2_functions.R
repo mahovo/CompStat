@@ -24,6 +24,8 @@
     
     ## t-distribution density function
     t_dens <- function(x_i, mu, sigma) {
+      if(sigma < 0)
+        warning("sigma < 0")
       (const * 
          (1 + (
            (x_i - mu)^2)/(nu * sigma^2)
@@ -33,6 +35,21 @@
     
     ## Q
     Q <- function(par, p_tilde){
+      p <- par[1]
+      mu1 <- par[2]
+      mu2 <- par[3]
+      sigma1 <- par[4]
+      sigma2 <- par[5]
+      nu <- nu1 <- nu2 <- 5
+      if(p < 0)
+        #warning("p < 0")
+        print("p < 0")
+      if(sigma1 < 0 )
+        #warning("sigma1 < 0")
+        print("sigma1 < 0")
+      if(sigma2 < 0 )
+        #warning("sigma2 < 0")
+        print("sigma2 < 0")
       sum = 0
       for(i in seq_along(x)){
         sum = sum + p_tilde[i] * (
@@ -42,7 +59,7 @@
           )
         )
       }
-      sum
+      - sum ## Negative log-likelihood
     }
     
     grad_Q <- function(par, p_tilde){
@@ -55,13 +72,13 @@
       
       const <- (nu + 1) / 2
       
-      dp <- sum((p_tilde - p) /(p * (1-0)))
-      dmu1 <- sum((2 * p_tilde * const)/(x - mu1))
-      dmu2 <- sum((2 * (1 - p_tilde) * const)/(x - mu2))
-      dsigma1 <- sum(p_tilde * ((2 * const - 1) / sigma1))
-      dsigma2 <- sum((1 - p_tilde) * ((2 * const - 1) / sigma2))
+      dp <- -sum((p_tilde - p) /(p * (1-0)))
+      dmu1 <- -sum((2 * p_tilde * const)/(x - mu1))
+      dmu2 <- -sum((2 * (1 - p_tilde) * const)/(x - mu2))
+      dsigma1 <- -sum(p_tilde * ((2 * const - 1) / sigma1))
+      dsigma2 <- -sum((1 - p_tilde) * ((2 * const - 1) / sigma2))
       
-      c(dp, dmu1, dmu2, dsigma1, dsigma2)
+      c(dp, dmu1, dmu2, dsigma1, dsigma2) ## Negative log likelihood
     }
     
     ## Calculate conditional expectations
@@ -77,6 +94,8 @@
         a[i] <- p * t_dens(x[i], mu1, sigma1)
         b[i] <- (1 - p)* t_dens(x[i], mu2, sigma2)
       }
+      print(paste("EStep sigma1 = ", sigma1))
+      print(paste("EStep sigma2 = ", sigma2))
       b / (a + b)
     }
     ## Maximize Q
@@ -86,14 +105,18 @@
       #N1 <- n - N2
       #c(N1 / n, sum((1 - pz) * x) / N1, sum(pz * x) / N2)
       value <- Q(par, p_tilde)
+      print(paste("MStep value = ", value))
       grad <- grad_Q(par, p_tilde)
+      print(paste("min(grad) = ", min(grad)))
+      print(paste("max(grad) = ", max(grad)))
       h_prime <- sum(grad^2)
+      print(paste("h_prime = ", h_prime))
       ## Convergence criterion based on gradient norm
       if(h_prime <= epsilon) break
       gamma <- gamma0
       ## Proposed descent step
       par1 <- par - gamma * grad
-      
+      print(paste("par1 = ", par1))
       ## Backtracking while descent is insufficient
       while(Q(par1, p_tilde) > value - c * gamma * h_prime) {
         gamma <- d * gamma
@@ -110,7 +133,10 @@
       if(!is.null(cb)) cb()
       if(sum_sq_diff <= epsilon * (sum(par^2) + epsilon))
         break
-    } 
+    }
+    print(paste("Number of iterations: ", i))
+    if(i == maxit)
+      warning("Maximal number, ", maxit, ", of iterations reached")
     par
   }
 }
