@@ -24,7 +24,7 @@
   library(CSwR)
   
   # Source functions
-  source("/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/EKSAMEN/2/r/2.2_functions.R")
+  #source("/Users/mhvpbp13/Library/Mobile Documents/com~apple~CloudDocs/CBS/cbs/Semester k1/CompStat/2020/Assignments/git/CompStat/Assignment 3.2_group2/r/3.2_functions.R")
 }
 
 
@@ -72,13 +72,14 @@ par(mfrow=c(1,1))
 
 ## > t-distribution mixture ----
 {
+  set.seed(42)
   p <- 0.5
-  mu1 <- -10
-  mu2 <- 10
+  mu1 <- -4
+  mu2 <- 4
   sigma1 <- 1
-  sigma2 <- 1
+  sigma2 <- 2
   nu <- 5
-  n <- 10000
+  n <- 5000
   z <- sample(c(TRUE, FALSE), n, replace = TRUE, prob = c(p, 1 - p))
   ## Conditional simulation from the mixture components
   y <- numeric(n)
@@ -107,24 +108,25 @@ par(mfrow=c(1,1))
 
 
 {
-  set.seed(5150)
-  par <- runif(5, 0.1, 1)
-  par <- c(0.4, -5, 5, 2, 2)
+  #par <- runif(5, 0.1, 1)
+  par <- c(runif(1, 0.1, 0.9), runif(1, -0.9, 0.9), runif(1, -0.9, 0.9), runif(1, 0.5, 2.0), runif(1, 0.5, 2.0))
   EM_tracer = tracer(c('sum_sq_diff'), N = 1)
-  EM(
+  estimate <- EM(
     par,
     y,
     d = 0.8, 
     c = 0.1, 
-    gamma0 = 0.00001,
-    maxit = 1000,
-    epsilon = 1e-8,
+    gamma0 = 1e-3,
+    maxit = 10000,
+    epsilon = 1e-12,
     #cb = NULL
     cb = EM_tracer$trace
   )
+  estimate
   #print(par)
   #summary(EM_tracer)
 }
+
 
 EM_trace <- summary(EM_tracer)
 # EM_trace <- transform(
@@ -135,5 +137,10 @@ EM_trace <- summary(EM_tracer)
 qplot(1:nrow(EM_trace), sum_sq_diff, data = EM_trace)
 
 
-
-
+## Plot estimated distribution
+{
+  hist(y, prob=TRUE, breaks=40)
+  rug(y)
+  x <- seq(min(y), max(y), length.out = 200)
+  curve(f_h(x, estimate[4], estimate[5], estimate[2], estimate[3], estimate[1], nu), add = TRUE, col = "red")
+}
