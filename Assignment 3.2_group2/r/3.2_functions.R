@@ -100,10 +100,6 @@
     }
     ## Maximize Q
     MStep <- function(par, p_tilde) {
-      #n <- length(x)
-      #N2 <- sum(pz)
-      #N1 <- n - N2
-      #c(N1 / n, sum((1 - pz) * x) / N1, sum(pz * x) / N2)
       value <- Q(par, p_tilde)
       print(paste("MStep value = ", value))
       grad <- grad_Q(par, p_tilde)
